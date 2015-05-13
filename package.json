@@ -10,7 +10,7 @@
   "scripts": {
     "test": "mocha test/**/*_test.js --bail"
   },
-  "author": "",
+  "author": "StudioLabs",
   "license": "BSD-2-Clause",
   "dependencies": {
     "websocket": "~1.0.8",
