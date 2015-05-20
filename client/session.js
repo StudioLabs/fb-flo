@@ -40,6 +40,7 @@
     this.createLogger = createLogger;
     this.logger = createLogger('session');
     this.resources = [];
+    this.devResources = [];
     this.url = null;
     this.conn = null;
     this.listeners = {};
@@ -120,9 +121,14 @@
 
   Session.prototype.registerResource = function(res) {
     // exclude ressource that are data
-    if(res.url.substr(0,4) !== 'data'){
+    if(res.url.substr(0,4) !== 'data' ){
        var url = res.url.split('?')[0];
-       this.resources[url] = res;
+
+        if(url.indexOf('/dev/')>0){
+            this.devResources[url] = res;
+        }else{
+           this.resources[url] = res;
+        }
      }
   };
 
@@ -136,12 +142,14 @@
   Session.prototype.getResources = function(callback) {
     var self = this;
     chrome.devtools.inspectedWindow.getResources(function (resources) {
-      
+
+      self.url = resources[0].url;
+
       resources.forEach(function(res){
           self.registerResource(res);
       });
 
-      self.url = resources[0].url;
+      
       // After we register the current resources, we listen to the
       // onResourceAdded event to push on more resources lazily fetched
       // to our array.
@@ -219,15 +227,43 @@
    * @param {string} content
    * @private
    */
-
     Session.prototype.resourceUpdatedHandler = function(updatedResource,content) {
-        this.logger.log('updating source', updatedResource.url);
-        this.conn.sendMessage({
-           action : 'update',
-           url : updatedResource.url,
-           content : content
-        });
-    };
+
+     if(this.devResources[updatedResource.url] !== undefined ){
+        var resource = this.devResources[updatedResource.url];
+        if(resource.sync !== undefined ){
+          this.logger.log(' synchro');
+          var sync = resource.sync;
+          var record = {
+               action : 'sync',
+               url : sync
+          };
+          this.conn.sendMessage(record);
+          delete resource.sync;
+        }else if(resource.resourceName !== undefined ){
+          this.triggerReloadEvent(resource.resourceName);
+          delete resource.resourceName;
+        }
+
+     }else if(this.resources[updatedResource.url] !== undefined ){
+        var resource = this.resources[updatedResource.url];
+        if(resource.resourceName !== undefined ){
+          this.triggerReloadEvent(updatedResource.url);
+          delete resource.resourceName;
+        }else{
+          this.logger.log(' update');
+            this.conn.sendMessage({
+                 action : 'update',
+                 url : updatedResource.url,
+                 content : content
+            });
+        }
+        
+     }
+
+     
+
+  };
 
   /**
    * Handler for messages from the server.
@@ -237,34 +273,84 @@
    */
 
   Session.prototype.messageHandler = function(updatedResource) {
-    this.logger.log('Requested resource update', updatedResource.resourceURL);
+   
+    if(updatedResource.action == 'baseUrl' && this.conn && this.url){
+          return this.conn.sendMessage({
+             action : 'baseUrl',
+             url : this.url
+          });
+      }else if(updatedResource.action == 'sync'){
 
-    if (updatedResource.reload) {
-      chrome.devtools.inspectedWindow.reload();
-      return;
-    }
+        this.logger.log('sync', updatedResource.resourceURL);
+        
+        if(this.resources[updatedResource.resourceURL] !== undefined){
+          var resource = this.resources[updatedResource.resourceURL];
+        }
+      
+    }else if(updatedResource.action == 'update'){
 
-    if(this.resources[updatedResource.resourceURL] !== undefined){
-      var resource = this.resources[updatedResource.resourceURL];
-    }else{
-      this.logger.error(
-        'Resource with the following URL is not on the page:',
-        updatedResource.resourceURL
-      );
-      return;
-    }
-
-    resource.setContent(updatedResource.contents, true, function (status) {
-      if (status.code === 'OK') {
-        this.logger.log('Resource update successful');
-        triggerReloadEvent(updatedResource);
-      } else {
-        this.logger.error(
-          'flo failed to update, this shouldn\'t happen please report it: ' +
-            JSON.stringify(status)
-        );
+      this.logger.log('push', updatedResource.resourceURL);
+      
+      if (updatedResource.reload !== undefined) {
+        chrome.devtools.inspectedWindow.reload();
+        return;
       }
-    }.bind(this));
+
+      if(this.devResources[updatedResource.resourceURL] !== undefined){
+        var resource = this.devResources[updatedResource.resourceURL];
+      }
+
+      if(updatedResource.sync !== undefined){
+          resource.sync = updatedResource.sync;    
+      }
+
+    }
+
+     if(updatedResource.resourceName !== undefined){
+          resource.resourceName = updatedResource.resourceName; 
+      }
+
+     if(resource === undefined){
+          this.logger.error(
+            'Resource with the following URL is not on the page:',
+            updatedResource.resourceURL
+          );
+          return;
+     }
+
+    
+      // if updatedResource send by part
+      if(updatedResource.part !== undefined){
+
+       if(resource.part === undefined){
+          resource.part = [];
+       }
+       // store each part
+       resource.part.push(updatedResource.part);
+
+      }else {
+          // concat all parts
+          if (resource.part !== undefined){
+              resource.part.push(updatedResource.contents);
+              updatedResource.contents = resource.part.join('');
+              delete resource.part;
+          }
+
+      
+              resource.setContent(updatedResource.contents, true, function (status) {
+                this.logger.log(status.code);
+                   
+                if (status.code != 'OK') {
+                  this.logger.error(
+                    'flo failed to update, this shouldn\'t happen please report it: ' +
+                      JSON.stringify(status)
+                  );
+                }
+              }.bind(this));
+          // update the resource
+          
+      }
+    
   };
 
   /**
@@ -295,14 +381,36 @@
     };
   }
 
-  function triggerReloadEvent(resource) {
-    var data = {
-      url: resource.resourceURL,
-      contents: resource.contents
-    };
 
-    if ('string' === typeof resource.update) {
-      var updateFnStr = '(function() {' +
+  Session.prototype.console = function(title , data) {
+     var dataB64 = window.btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+     var data = decodeURIComponent(escape(window.atob(dataB64)));
+     var script = '(function() {' +
+        'var data = '+data+' ;'+
+        'console.log("[fb-flo] '+title+'",data);' +
+        '})()';
+    chrome.devtools.inspectedWindow.eval(script);
+
+  }
+
+
+  Session.prototype.triggerReloadEvent = function(url) {
+
+
+    if( typeof url == 'string'){
+
+       var script = '(function() {' +
+      'var time = new Date().getTime();'+
+      'console.log("[fb-flo] '+url+' has just been updated ["+ time +"] ");' +
+      '})()';
+
+       chrome.devtools.inspectedWindow.eval(script);
+
+    }
+
+  
+
+     /* var updateFnStr = '(function() {' +
         'try {' +
           '(' + resource.update + ')(window, ' + JSON.stringify(resource.resourceURL) + ');' +
           '} catch(ex) {' +
@@ -311,16 +419,11 @@
           '}' +
         '})()';
         chrome.devtools.inspectedWindow.eval(updateFnStr);
-    }
 
-    var script = '(function() {' +
-      'var event = new Event(\'fb-flo-reload\');' +
-      'event.data = ' + JSON.stringify(data) + ';' +
-      'window.dispatchEvent(event);' +
-      '})()';
+        */
+ 
 
-    chrome.devtools.inspectedWindow.eval(script);
-  }
+  };
 
   function indexOfMatcher(val, resourceURL) {
     return val.indexOf(resourceURL) > -1;
