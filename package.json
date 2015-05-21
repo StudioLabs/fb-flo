@@ -8,6 +8,7 @@
   },
   "main": "index.js",
   "scripts": {
+    "test": "mocha test/**/*_test.js --bail"
   },
   "author": "StudioLabs",
   "license": "BSD-2-Clause",
