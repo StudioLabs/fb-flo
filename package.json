@@ -1,23 +1,16 @@
 {
   "name": "fb-flo",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "Modify running web apps without reloading",
   "repository": {
     "type": "git",
     "url": "git@github.com:StudioLabs/fb-flo.git"
   },
   "main": "index.js",
-  "scripts": {
-    "test": "mocha test/test.js --bail"
-  },
   "author": "StudioLabs",
-  "license": "BSD-2-Clause",
   "dependencies": {
     "websocket": "~1.0.8",
     "sane": "~1.0.0"
-  },
-  "devDependencies": {
-    "mocha": "~1.17.1"
   },
   "bin": "./bin/flo"
 }
