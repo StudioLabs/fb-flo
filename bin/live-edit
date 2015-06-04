@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 
-var flo = require('../');
+var liveEdit = require('../');
 var path = require('path');
 
 var file = path.join(
   process.cwd(),
-  process.argv[2] || 'liveEditfile.js'
+  process.argv[2] 
 );
 
-var config;
+var config = {};
 try {
   config = require(file);
 } catch (e) {
@@ -17,7 +17,7 @@ try {
 
 config.options = config.options || {};
 
-var f = flo(
+var f = liveEdit(
   config.options.dir || process.cwd(),
   config.options,
   config.resolver
