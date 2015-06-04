@@ -56,7 +56,7 @@ var server = liveEdit(
 * `sourceDirToWatch`: absolute or relative path to the directory to watch that contains the source code that will be built.
 * `options` hash of options:
     * `port` port to start the server on (defaults to 8888).
-    * `verbose` `true` or `false` value indicating if flo should be noisy.
+    * `verbose` `true` or `false` value indicating if live-edit should be noisy.
     * `glob` a glob string or array of globs to match against the files to watch.
     * `useWatchman` when watching a large number of folders or where watching is buggy you can use (watchman)[https://facebook.github.io/watchman/].
     * `useFilePolling` some platforms that do not support native file watching, you can force the file watcher to work in polling mode.
@@ -76,7 +76,7 @@ The resolver callback is called with two arguments:
 
 ### 2. Install the Chrome Extension
 
-Grab the [live-edit Chrome extension](https://chrome.google.com/webstore/detail/ahkfhobdidabddlalamkkiafpipdfchp). This will add a new tab in your Chrome DevTools called 'flo'.
+Grab the [live-edit Chrome extension](https://chrome.google.com/webstore/detail/ahkfhobdidabddlalamkkiafpipdfchp). This will add a new tab in your Chrome DevTools called 'live-edit'.
 
 ### 3. Activate Live Edit
 
@@ -90,7 +90,7 @@ See screenshot:
 
 ![](http://i.imgur.com/SamY32i.png)
 
-As an alternative to the `update` function, after any resource is updated, the `live-edit-reload` event will be triggered on the `window`. The event's data will contain the `url` and `contents` that were provided to the `callback` function on the `flo-server`. The difference between the the `update` function and the `live-edit-reload` event is that the first one is defined on the server and executed in the client, while the later is defined on the client and executed there as well. It is preferred to use the `update` function, since you won't load your app with code specific to live-editing. Example:
+As an alternative to the `update` function, after any resource is updated, the `live-edit-reload` event will be triggered on the `window`. The event's data will contain the `url` and `contents` that were provided to the `callback` function on the `live-edit-server`. The difference between the the `update` function and the `live-edit-reload` event is that the first one is defined on the server and executed in the client, while the later is defined on the client and executed there as well. It is preferred to use the `update` function, since you won't load your app with code specific to live-editing. Example:
 ```js
 window.addEventListener('live-edit-reload', function(ev) {
     // perform additional steps here to reinitialize your application so it would take advantage of the new resource
@@ -103,46 +103,218 @@ window.addEventListener('live-edit-reload', function(ev) {
 Say you have a Makefile program that builds your JavaScript and CSS into `build/build.js` and `build/build.css` respectively, this how you'd configure your live-edit server:
 
 ```js
-var flo = require('live-edit'),
+var liveEdit = require('live-edit'),
     fs = require('fs'),
     path = require('path'),
-    exec = require('child_process').exec;
+    exec = require('child_process').exec,
+    combineSourceMap = require('combine-source-map'),
+    srcIndex = require('./build/src'),
+    hrefIndex = require('./build/sass');
+var style = [] ;
+var javascript = [] ;
 
-var server = flo('./lib/', {
-  port: 8888,
-  dir: './lib/',
-  glob: ['./lib/**/*.js', './lib/**/*.css']
-}, resolver);
+for (var i in hrefIndex) {
 
-function resolver(filepath, callback) {
-    exec('make', function (err) {
-      if (err) throw err;
-      callback({
-        resourceURL: 'build/build' + path.extname(filepath),
-        contents: fs.readFileSync('build/build' + path.extname(filepath)).toString()
-      })
-    });
+  style[hrefIndex[i].index] = {
+    index: hrefIndex[i].links
+  };
 }
+
+for (var i in srcIndex) {
+  javascript[srcIndex[i].index] = {
+    src: srcIndex[i].src,
+    line: srcIndex[i].line
+  };
+
+}
+
+var tasks  = require('./tasks');
+
+function createSourceMap(fileUrl, content) {
+
+  var sourcemap = combineSourceMap.create();
+
+  sourcemap.addFile(
+    { sourceFile: fileUrl, source: content.toString('utf8') },
+    { line: 1 }
+  );
+
+  var comment = sourcemap.comment();
+  return new Buffer('\n' + comment + '\n').toString('utf8');
+}
+
+function getBrowserifyFileContent(originalFilePath, fileUrl, content) {
+  console.log('getBrowserifyFileContent', fileUrl);
+  var sourceMapInline = createSourceMap(fileUrl, content);
+  var fileContent = javascript[originalFilePath].line +
+      '\n' + content + '\n' +
+  '}';
+
+  return {
+    content:fileContent,
+    sourcemap:sourceMapInline
+  };
+}
+
+var server = liveEdit(['./lib/', './sir-stylist/css/sass/', './templates/'],
+{
+  port: 8888,
+  verbose: true,
+  glob: ['**/*.js', '**/*.scss', '**/*.hbs']
+},
+function resolver(originalFilePath) {
+
+  var fileUrl = originalFilePath.replace(__dirname + '/', '');
+
+  var extension = path.extname(fileUrl);
+  var originalFileContent = '';
+  console.log('Updating ' + fileUrl);
+
+  if (extension === '.js') {
+
+    var browserifyFilePath = './build' + javascript[originalFilePath].src;
+
+    var record = {
+      action: 'update',
+      resourceURL: javascript[originalFilePath].src
+    };
+
+    if (javascript[originalFilePath].content === undefined) {
+      originalFileContent = fs.readFileSync(originalFilePath).toString('utf8');
+      record.sync = server.getClientHostname() + '/' + server.getClientPageUrl() + fileUrl;
+
+    }else {
+      originalFileContent = javascript[originalFilePath].content;
+      delete javascript[originalFilePath].content;
+      record.resourceName = server.getClientHostname() + '/' + server.getClientPageUrl() + fileUrl;
+    }
+
+    javascript[originalFilePath].sync = originalFileContent;
+
+    var browserifyFile = getBrowserifyFileContent(
+                                        originalFilePath,
+                                        '/' + server.getClientPageUrl() + fileUrl,
+                                        originalFileContent);
+
+    record.content = browserifyFile.content + browserifyFile.sourcemap;
+
+    fs.writeFile(browserifyFilePath, record.content, function(err) {
+      if (err) {
+        throw err;
+      }
+
+      server.broadcast(record);
+    });
+
+  } else if (extension === '.scss') {
+
+    var sassFiles = style[originalFilePath].index;
+    var sync = true;
+    if (style[originalFilePath].content === undefined) {
+      originalFileContent = fs.readFileSync(originalFilePath).toString();
+    } else {
+      originalFileContent = style[originalFilePath].content;
+      delete style[originalFilePath].content;
+      sync = false;
+    }
+
+    style[originalFilePath].sync = originalFileContent;
+
+    sassFiles.forEach(function(sassfilePath) {
+
+      console.log(sassfilePath);
+
+      tasks.css(sassfilePath, sassfilePath.replace(__dirname + '/build', ''), function(url, content) {
+        var record  = {
+          action: 'update',
+          resourceURL: url,
+          content: content
+        };
+
+        if (sync) {
+          record.sync = server.getClientHostname() + '/' + fileUrl;
+        }else {
+          record.resourceName = server.getClientHostname() + '/' + fileUrl;
+        }
+
+        server.broadcast(record);
+
+      });
+    });
+
+  } else if (extension === '.hbs') {
+
+    exec('glup js:dev:app', function(err) {
+      if (err) {
+        throw err;
+      }
+
+      server.broadcast({
+        action: 'update',
+        reload: true
+      });
+    });
+  }
+});
 
 server.once('ready', function() {
   console.log('Ready!');
 });
 
-// when we update file in the browser editor, we update the  original source file
-server.on('update', function(message) {
+server.on('sync', function(message) {
 
-    server.stopWatching(function() {
+  var extension = path.extname(message.url);
+  var key = '';
+  var originalFileContent = '';
 
-        var sourceFilePath = message.url.replace(server.getClientHostname(), '');
-              
-        fs.writeFile(sourceFilePath, message.content, function() {
-              setTimeout(function(){
-                  server.watch();
-              }, 100);
-        });
+  if (extension === '.js') {
+    key = __dirname + '/' + message.url.replace(server.getClientHostname() + '/' + server.getClientPageUrl(), '');
+    if (javascript[key].sync !== undefined) {
+      originalFileContent = javascript[key].sync;
+      delete javascript[key].sync;
+    }
+  }else if (extension === '.scss') {
+    key = __dirname + '/' + message.url.replace(server.getClientHostname() + '/', '');
+    if (style[key].sync !== undefined) {
+      originalFileContent = style[key].sync;
+      delete style[key].sync;
+    }
+  }
 
-    });
+  if (originalFileContent !== undefined) {
+    var url = message.url.replace(server.getClientHostname() + '/', '');
+    var record = {
+      action: 'sync',
+      resourceURL: url,
+      content: originalFileContent
+    };
+    record.resourceName = message.url;
+
+    server.broadcast(record);
+
+  }
 
 });
+
+server.on('update', function(message) {
+  var extension = path.extname(message.url);
+  var originalFilePath = '';
+  if (extension === '.js') {
+    originalFilePath = __dirname + '/' + message.url.replace(server.getClientHostname() + '/' + server.getClientPageUrl(), '');
+    if (javascript[originalFilePath] !== undefined) {
+      javascript[originalFilePath].content = message.content;
+    }
+  }else if (extension === '.scss') {
+    originalFilePath = __dirname + '/' + message.url.replace(server.getClientHostname() + '/', '');
+    if (style[originalFilePath] !== undefined) {
+      style[originalFilePath].content = message.content;
+    }
+  }
+
+  fs.writeFileSync(originalFilePath, message.content);
+
+});
+
+
 
 ```
