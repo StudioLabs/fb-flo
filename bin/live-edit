@@ -5,7 +5,7 @@ var path = require('path');
 
 var file = path.join(
   process.cwd(),
-  process.argv[2] || 'flofile.js'
+  process.argv[2] || 'liveEditfile.js'
 );
 
 var config;

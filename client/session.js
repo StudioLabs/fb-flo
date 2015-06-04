@@ -54,12 +54,12 @@
    */
 
   Session.prototype.start = function() {
-    this.logger.log('Starting flo for host', this.host);
+    this.logger.log('Starting Live-Edit for host', this.host);
     this.getLocation(this.setLocation);
   };
 
   /**
-   * Similar to restart but does only what's needed to get flo started.
+   * Similar to restart but does only what's needed to get live-edit started.
    *
    * @public
    */
@@ -382,7 +382,7 @@
                    
                 if (status.code != 'OK') {
                   this.logger.error(
-                    'flo failed to update, this shouldn\'t happen please report it: ' +
+                    'Live-Edit failed to update, this shouldn\'t happen please report it: ' +
                       JSON.stringify(status)
                   );
                 }
@@ -427,7 +427,7 @@
      var data = decodeURIComponent(escape(window.atob(dataB64)));
      var script = '(function() {' +
         'var data = '+data+' ;'+
-        'console.log("[fb-flo] '+title+'",data);' +
+        'console.log("[live-edit] '+title+'",data);' +
         '})()';
     chrome.devtools.inspectedWindow.eval(script);
 
@@ -441,7 +441,7 @@
 
        var script = '(function() {' +
       'var time = new Date().getTime();'+
-      'console.log("[fb-flo] '+url+' has just been updated ["+ time +"] ");' +
+      'console.log("[live-edit] '+url+' has just been updated ["+ time +"] ");' +
       '})()';
 
        chrome.devtools.inspectedWindow.eval(script);
@@ -454,7 +454,7 @@
         'try {' +
           '(' + resource.update + ')(window, ' + JSON.stringify(resource.resourceURL) + ');' +
           '} catch(ex) {' +
-            'console.error("There was an error while evaluating the fb-flo update function. ' +
+            'console.error("There was an error while evaluating the live-edit update function. ' +
             'Please check the function\'s code and review the README guidelines regarding it!", ex);' +
           '}' +
         '})()';

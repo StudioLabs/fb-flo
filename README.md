@@ -1,26 +1,26 @@
-fb-flo
+live-edit
 ---
 
-fb-flo is a Chrome extension that lets you modify running apps without reloading. It's easy to integrate with your build system, dev environment, and can be used with your favorite editor. Read more about it on [https://facebook.github.io/fb-flo/](https://facebook.github.io/fb-flo/)
+live-edit is a Chrome extension that lets you modify running apps without reloading. It's easy to integrate with your build system, dev environment, and can be used with your favorite editor. Read more about it on [https://facebook.github.io/live-edit/](https://facebook.github.io/live-edit/)
 
 ## Usage
 
-fb-flo is made up of a server and client component. This will guide through configuring your server for your project and installing the Chrome extension.
+live-edit is made up of a server and client component. This will guide through configuring your server for your project and installing the Chrome extension.
 
-### 1. Configure fb-flo server
+### 1. Configure live-edit server
 
 ```
-$ npm install fb-flo
+$ npm install live-edit
 ```
 
-fb-flo exports a single `fb-flo` function to start the server. Here is an example where you have your source JavaScript and CSS files in the root directory and your build step involves bundling both into a respective `bundle.js`, `bundle.css`.
+live-edit exports a single `live-edit` function to start the server. Here is an example where you have your source JavaScript and CSS files in the root directory and your build step involves bundling both into a respective `bundle.js`, `bundle.css`.
 
 ```js
-var flo = require('fb-flo'),
+var liveEdit = require('live-edit'),
     path = require('path'),
     fs = require('fs');
 
-var server = flo(
+var server = liveEdit(
   sourceDirToWatch,
   {
     port: 8888,
@@ -51,12 +51,11 @@ var server = flo(
 );
 ```
 
-`flo` takes the following arguments.
+`live-edit` takes the following arguments.
 
 * `sourceDirToWatch`: absolute or relative path to the directory to watch that contains the source code that will be built.
 * `options` hash of options:
     * `port` port to start the server on (defaults to 8888).
-    * `host` to listen on.
     * `verbose` `true` or `false` value indicating if flo should be noisy.
     * `glob` a glob string or array of globs to match against the files to watch.
     * `useWatchman` when watching a large number of folders or where watching is buggy you can use (watchman)[https://facebook.github.io/watchman/].
@@ -77,23 +76,23 @@ The resolver callback is called with two arguments:
 
 ### 2. Install the Chrome Extension
 
-Grab the [fb-flo Chrome extension](https://chrome.google.com/webstore/detail/ahkfhobdidabddlalamkkiafpipdfchp). This will add a new tab in your Chrome DevTools called 'flo'.
+Grab the [live-edit Chrome extension](https://chrome.google.com/webstore/detail/ahkfhobdidabddlalamkkiafpipdfchp). This will add a new tab in your Chrome DevTools called 'flo'.
 
-### 3. Activate fb-flo
+### 3. Activate Live Edit
 
-To activate fb-flo from the browser:
+To activate  Live Edit from the browser:
 
 * Open Chrome DevTools.
-* Click on the new 'fb-flo' pane.
+* Click on the new 'Live Edit' pane.
 * Click on 'Activate for this site'
 
 See screenshot:
 
 ![](http://i.imgur.com/SamY32i.png)
 
-As an alternative to the `update` function, after any resource is updated, the `fb-flo-reload` event will be triggered on the `window`. The event's data will contain the `url` and `contents` that were provided to the `callback` function on the `flo-server`. The difference between the the `update` function and the `fb-flo-reload` event is that the first one is defined on the server and executed in the client, while the later is defined on the client and executed there as well. It is preferred to use the `update` function, since you won't load your app with code specific to live-editing. Example:
+As an alternative to the `update` function, after any resource is updated, the `live-edit-reload` event will be triggered on the `window`. The event's data will contain the `url` and `contents` that were provided to the `callback` function on the `flo-server`. The difference between the the `update` function and the `live-edit-reload` event is that the first one is defined on the server and executed in the client, while the later is defined on the client and executed there as well. It is preferred to use the `update` function, since you won't load your app with code specific to live-editing. Example:
 ```js
-window.addEventListener('fb-flo-reload', function(ev) {
+window.addEventListener('live-edit-reload', function(ev) {
     // perform additional steps here to reinitialize your application so it would take advantage of the new resource
     console.log("Resource " + ev.data.url + " has just been replaced with this new content: " + ev.data.contents);
 });
@@ -101,10 +100,10 @@ window.addEventListener('fb-flo-reload', function(ev) {
 
 ### Example
 
-Say you have a Makefile program that builds your JavaScript and CSS into `build/build.js` and `build/build.css` respectively, this how you'd configure your fb-flo server:
+Say you have a Makefile program that builds your JavaScript and CSS into `build/build.js` and `build/build.css` respectively, this how you'd configure your live-edit server:
 
 ```js
-var flo = require('fb-flo'),
+var flo = require('live-edit'),
     fs = require('fs'),
     path = require('path'),
     exec = require('child_process').exec;

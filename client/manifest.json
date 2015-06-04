@@ -1,7 +1,7 @@
 {
-  "name": "fb-flo",
-  "version": "0.13",
-  "description": "Modify running web apps without reloading",
+  "name": "live-edit",
+  "version": "0.1",
+  "description": "Edit in live your web apps without reloading",
   "devtools_page": "devtools.html",
   "manifest_version": 2,
   "permissions": [

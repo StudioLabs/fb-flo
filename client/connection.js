@@ -30,7 +30,7 @@
 
   /**
    * Takes care of connecting, messaging, handling connection retries with the
-   * flo server.
+   * Live-Edit server.
    *
    * @param {string} host
    * @param {string} port
@@ -203,7 +203,7 @@
    };
 
   /**
-   * Send Message to flo Server
+   * Send Message to Live-Edit Server
    *
    * @param {object} evt
    * @private
