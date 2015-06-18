@@ -1,5 +1,5 @@
 {
-  "name": "LiveEdit",
+  "name": "live-edit",
   "version": "1.0.5",
   "description": "Modify running web apps without reloading",
   "repository": {
