@@ -1,5 +1,5 @@
 /**
- *  Copyright (c) 2014, Facebook, Inc.
+ *  Copyright (c) 2014, StudioLabs, Inc.
  *  All rights reserved.
  *
  *  This source code is licensed under the BSD-style license found in the
@@ -7,4 +7,4 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-module.exports = require('./lib/flo');
+module.exports = require('./lib/live-edit');

@@ -1,5 +1,5 @@
 /**
- *  Copyright (c) 2014, Facebook, Inc.
+ *  Copyright (c) 2014, StudioLabs, Inc.
  *  All rights reserved.
  *
  *  This source code is licensed under the BSD-style license found in the
@@ -21,14 +21,14 @@
   }
 
   function triggerEvent(type, data) {
-    var event = new Event('flo_' + type);
+    var event = new Event('live_edit_' + type);
     event.data = data;
     window.dispatchEvent(event);
     return event;
   };
 
   function listenToEvent(type, callback) {
-    window.addEventListener('flo_' + type, callback);
+    window.addEventListener('live_edit_' + type, callback);
   }
 
   /**

@@ -1,10 +1,10 @@
 {
-  "name": "fb-flo",
-  "version": "0.4.3",
+  "name": "LiveEdit",
+  "version": "0.1",
   "description": "Modify running web apps without reloading",
   "repository": {
     "type": "git",
-    "url": "git@github.com:StudioLabs/fb-flo.git"
+    "url": "git@github.com:StudioLabs/live-edit.git"
   },
   "main": "index.js",
   "author": "StudioLabs",
@@ -12,5 +12,5 @@
     "websocket": "~1.0.8",
     "sane": "~1.0.0"
   },
-  "bin": "./bin/flo"
+  "bin": "./bin/live-edit"
 }

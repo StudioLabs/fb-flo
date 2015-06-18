@@ -1,5 +1,5 @@
 /**
- *  Copyright (c) 2014, Facebook, Inc.
+ *  Copyright (c) 2014, StudioLabs, Inc.
  *  All rights reserved.
  *
  *  This source code is licensed under the BSD-style license found in the
@@ -17,16 +17,16 @@
    * Constants
    */
 
-  var FLO_CONFIG_KEY = 'flo-config';
+  var LIVE_EDIT_CONFIG_KEY = 'live-edit-config';
 
   /**
-   * Flo client controller.
+   * LiveEdit client controller.
    *
-   * @class FloClient
+   * @class LiveEditClient
    * @private
    */
 
-  function FloClient() {
+  function LiveEditClient() {
     var self = this;
     loadConfig(function (config) {
       self.config = config;
@@ -36,7 +36,7 @@
       self.status = self.status.bind(self);
       self.startNewSession = self.startNewSession.bind(self);
       self.createLogger = Logger(self.triggerEvent.bind(self, 'log'));
-      self.logger = self.createLogger('flo');
+      self.logger = self.createLogger('live-edit');
       self.createPanel();
       self.start();
     });
@@ -49,7 +49,7 @@
    * @private
    */
 
-  FloClient.prototype.saveConfig = function() {
+  LiveEditClient.prototype.saveConfig = function() {
     saveConfig(this.config);
   };
 
@@ -62,11 +62,11 @@
    * @private
    */
 
-  FloClient.prototype.listenToPanel = function(type, callback) {
+  LiveEditClient.prototype.listenToPanel = function(type, callback) {
     if (!this.panelWindow) {
       throw new Error('Panel not found');
     }
-    this.panelWindow.addEventListener('flo_' + type, callback.bind(this));
+    this.panelWindow.addEventListener('live_edit_' + type, callback.bind(this));
   };
 
   /**
@@ -78,8 +78,8 @@
    * @private
    */
 
-  FloClient.prototype.triggerEvent = function(type, data) {
-    var event = new Event('flo_' + type);
+  LiveEditClient.prototype.triggerEvent = function(type, data) {
+    var event = new Event('live_edit_' + type);
     event.data = data;
     // Save events for anytime we need to reinit the panel with prev state.
     this.panelEventBuffer.push(event);
@@ -96,10 +96,10 @@
    * @private
    */
 
-  FloClient.prototype.createPanel = function(callback) {
+  LiveEditClient.prototype.createPanel = function(callback) {
     var self = this;
     chrome.devtools.panels.create(
-      'flo',
+      'LiveEdit',
       '',
       'configure/configure.html',
       function (panel) {
@@ -122,7 +122,7 @@
    * @private
    */
 
-  FloClient.prototype.initPanel = function() {
+  LiveEditClient.prototype.initPanel = function() {
     this.listenToPanel('config_changed', function(e) {
       this.config = e.data;
       this.saveConfig();
@@ -137,24 +137,24 @@
   };
 
   /**
-   * Starts the flo client.
+   * Starts the LiveEdit client.
    *
    * @private
    */
 
-  FloClient.prototype.start = function() {
+  LiveEditClient.prototype.start = function() {
     this.status('starting');
     this.startNewSession();
   };
 
 
   /**
-   * Stops flo client.
+   * Stops LiveEdit client.
    *
    * @private
    */
 
-  FloClient.prototype.stop = function() {
+  LiveEditClient.prototype.stop = function() {
     this.session.destroy();
     this.session = null;
   };
@@ -166,7 +166,7 @@
    * @private
    */
 
-  FloClient.prototype.getLocation = function(callback) {
+  LiveEditClient.prototype.getLocation = function(callback) {
     chrome.devtools.inspectedWindow['eval'](
       'location.hostname || location.href',
       callback.bind(this)
@@ -181,7 +181,7 @@
    * @private
    */
 
-  FloClient.prototype.getSite = function(host) {
+  LiveEditClient.prototype.getSite = function(host) {
     var config = this.config;
     for (var i = 0; i < config.sites.length; i++) {
       var site = config.sites[i];
@@ -203,7 +203,7 @@
    * @private
    */
 
-  FloClient.prototype.startNewSession = function() {
+  LiveEditClient.prototype.startNewSession = function() {
     if (this.session) {
       this.stop();
     }
@@ -227,12 +227,12 @@
   };
 
   /**
-   * Enables flo for the current inspected window host.
+   * Enables LiveEdit for the current inspected window host.
    *
    * @private
    */
 
-  FloClient.prototype.enableForHost = function() {
+  LiveEditClient.prototype.enableForHost = function() {
     this.getLocation(function(host) {
       if (!this.getSite(host)) {
         this.config.sites.push({
@@ -254,7 +254,7 @@
    * @private
    */
 
-  FloClient.prototype.status = function(status, aux) {
+  LiveEditClient.prototype.status = function(status, aux) {
     var text, action;
     switch (status) {
       case 'starting':
@@ -301,7 +301,7 @@
   function saveConfig(config) {
     chrome.runtime.sendMessage({
       name: 'localStorage:set',
-      key: FLO_CONFIG_KEY,
+      key: LIVE_EDIT_CONFIG_KEY,
       data: JSON.stringify(config)
     });
   }
@@ -326,7 +326,7 @@
       chrome.runtime.sendMessage(
         {
           name : 'localStorage:get',
-          key : FLO_CONFIG_KEY
+          key : LIVE_EDIT_CONFIG_KEY
         },
         function (configJSON){
           var config = parseConfig(configJSON);
@@ -372,9 +372,9 @@
     var config = null;
 
     try {
-      config = window.localStorage && localStorage.getItem(FLO_CONFIG_KEY);
+      config = window.localStorage && localStorage.getItem(LIVE_EDIT_CONFIG_KEY);
       if (config) {
-        localStorage.removeItem(FLO_CONFIG_KEY);
+        localStorage.removeItem(LIVE_EDIT_CONFIG_KEY);
       }
     } catch (e) {
       return false;
@@ -401,6 +401,6 @@
   }
 
   // Start the app.
-  new FloClient();
+  new LiveEditClient();
 
 })();
