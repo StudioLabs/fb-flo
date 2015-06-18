@@ -1,5 +1,5 @@
 /**
- *  Copyright (c) 2014, Facebook, Inc.
+ *  Copyright (c) 2014, StudioLabs, Inc.
  *  All rights reserved.
  *
  *  This source code is licensed under the BSD-style license found in the
@@ -30,7 +30,7 @@
 
   /**
    * Takes care of connecting, messaging, handling connection retries with the
-   * Live-Edit server.
+   * LiveEdit server.
    *
    * @param {string} host
    * @param {string} port
@@ -203,7 +203,7 @@
    };
 
   /**
-   * Send Message to Live-Edit Server
+   * Send Message to LiveEdit Server
    *
    * @param {object} evt
    * @private

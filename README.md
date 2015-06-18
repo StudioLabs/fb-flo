@@ -1,22 +1,22 @@
-live-edit
+LiveEdit
 ---
 
-live-edit is a Chrome extension that lets you modify running apps without reloading. It's easy to integrate with your build system, dev environment, and can be used with your favorite editor. Read more about it on [https://facebook.github.io/live-edit/](https://facebook.github.io/live-edit/)
+LiveEdit is a Chrome extension that lets you modify running apps without reloading. It's easy to integrate with your build system, dev environment, and can be used with your favorite editor. Read more about it on [https://studiolabs.github.io/LiveEdit/](https://StudioLabs.github.io/LiveEdit/)
 
 ## Usage
 
-live-edit is made up of a server and client component. This will guide through configuring your server for your project and installing the Chrome extension.
+LiveEdit is made up of a server and client component. This will guide through configuring your server for your project and installing the Chrome extension.
 
-### 1. Configure live-edit server
+### 1. Configure LiveEdit server
 
 ```
-$ npm install live-edit
+$ npm install LiveEdit
 ```
 
-live-edit exports a single `live-edit` function to start the server. Here is an example where you have your source JavaScript and CSS files in the root directory and your build step involves bundling both into a respective `bundle.js`, `bundle.css`.
+LiveEdit exports a single `LiveEdit` function to start the server. Here is an example where you have your source JavaScript and CSS files in the root directory and your build step involves bundling both into a respective `bundle.js`, `bundle.css`.
 
 ```js
-var liveEdit = require('live-edit'),
+var liveEdit = require('LiveEdit'),
     path = require('path'),
     fs = require('fs');
 
@@ -51,14 +51,14 @@ var server = liveEdit(
 );
 ```
 
-`live-edit` takes the following arguments.
+`LiveEdit` takes the following arguments.
 
 * `sourceDirToWatch`: absolute or relative path to the directory to watch that contains the source code that will be built.
 * `options` hash of options:
     * `port` port to start the server on (defaults to 8888).
-    * `verbose` `true` or `false` value indicating if live-edit should be noisy.
+    * `verbose` `true` or `false` value indicating if LiveEdit should be noisy.
     * `glob` a glob string or array of globs to match against the files to watch.
-    * `useWatchman` when watching a large number of folders or where watching is buggy you can use (watchman)[https://facebook.github.io/watchman/].
+    * `useWatchman` when watching a large number of folders or where watching is buggy you can use (watchman)[https://StudioLabs.github.io/watchman/].
     * `useFilePolling` some platforms that do not support native file watching, you can force the file watcher to work in polling mode.
     * `pollingInterval` if in polling mode (useFilePolling) then you can set the interval (in milliseconds) at which to poll for file changes.
     * `watchDotFiles` dot files are not watched by default.
@@ -76,7 +76,7 @@ The resolver callback is called with two arguments:
 
 ### 2. Install the Chrome Extension
 
-Grab the [live-edit Chrome extension](https://chrome.google.com/webstore/detail/ahkfhobdidabddlalamkkiafpipdfchp). This will add a new tab in your Chrome DevTools called 'live-edit'.
+Grab the [LiveEdit Chrome extension](https://chrome.google.com/webstore/detail/ahkfhobdidabddlalamkkiafpipdfchp). This will add a new tab in your Chrome DevTools called 'LiveEdit'.
 
 ### 3. Activate Live Edit
 
@@ -90,9 +90,9 @@ See screenshot:
 
 ![](http://i.imgur.com/SamY32i.png)
 
-As an alternative to the `update` function, after any resource is updated, the `live-edit-reload` event will be triggered on the `window`. The event's data will contain the `url` and `contents` that were provided to the `callback` function on the `live-edit-server`. The difference between the the `update` function and the `live-edit-reload` event is that the first one is defined on the server and executed in the client, while the later is defined on the client and executed there as well. It is preferred to use the `update` function, since you won't load your app with code specific to live-editing. Example:
+As an alternative to the `update` function, after any resource is updated, the `LiveEdit-reload` event will be triggered on the `window`. The event's data will contain the `url` and `contents` that were provided to the `callback` function on the `LiveEdit-server`. The difference between the the `update` function and the `LiveEdit-reload` event is that the first one is defined on the server and executed in the client, while the later is defined on the client and executed there as well. It is preferred to use the `update` function, since you won't load your app with code specific to LiveEditing. Example:
 ```js
-window.addEventListener('live-edit-reload', function(ev) {
+window.addEventListener('LiveEdit-reload', function(ev) {
     // perform additional steps here to reinitialize your application so it would take advantage of the new resource
     console.log("Resource " + ev.data.url + " has just been replaced with this new content: " + ev.data.contents);
 });
@@ -100,10 +100,10 @@ window.addEventListener('live-edit-reload', function(ev) {
 
 ### Example
 
-Say you have a Makefile program that builds your JavaScript and CSS into `build/build.js` and `build/build.css` respectively, this how you'd configure your live-edit server:
+Say you have a Makefile program that builds your JavaScript and CSS into `build/build.js` and `build/build.css` respectively, this how you'd configure your LiveEdit server:
 
 ```js
-var liveEdit = require('live-edit'),
+var liveEdit = require('LiveEdit'),
     fs = require('fs'),
     path = require('path'),
     exec = require('child_process').exec,

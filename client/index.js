@@ -1,5 +1,5 @@
 /**
- *  Copyright (c) 2014, Facebook, Inc.
+ *  Copyright (c) 2014, StudioLabs, Inc.
  *  All rights reserved.
  *
  *  This source code is licensed under the BSD-style license found in the
@@ -99,7 +99,7 @@
   LiveEditClient.prototype.createPanel = function(callback) {
     var self = this;
     chrome.devtools.panels.create(
-      'live-edit',
+      'LiveEdit',
       '',
       'configure/configure.html',
       function (panel) {
@@ -137,7 +137,7 @@
   };
 
   /**
-   * Starts the Live-Edit client.
+   * Starts the LiveEdit client.
    *
    * @private
    */
@@ -149,7 +149,7 @@
 
 
   /**
-   * Stops Live-Edit client.
+   * Stops LiveEdit client.
    *
    * @private
    */
@@ -227,7 +227,7 @@
   };
 
   /**
-   * Enables Live-Edit for the current inspected window host.
+   * Enables LiveEdit for the current inspected window host.
    *
    * @private
    */

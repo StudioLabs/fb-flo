@@ -1,5 +1,5 @@
 /**
- *  Copyright (c) 2014, Facebook, Inc.
+ *  Copyright (c) 2014, StudioLabs, Inc.
  *  All rights reserved.
  *
  *  This source code is licensed under the BSD-style license found in the
@@ -168,7 +168,7 @@ describe('Session', function() {
 
     it('should trigger an event when matched', function(done) {
       chrome.devtools.inspectedWindow.eval = function(expr) {
-        assert(expr.match(/var event = new Event\('fb-flo-reload'\);/),
+        assert(expr.match(/var event = new Event\('live-edit-reload'\);/),
           "event creation");
         assert(expr.match(/event.data = \{"url":"http:\/\/w","contents":"foo"}/),
           "event data");
