@@ -150,7 +150,7 @@ h1 {
   line-height: 20px;
   font-weight: normal;
   margin-top: 0;
-  padding: 15px 0 10px;
+  padding: 10px 0 10px;
 }
 
 button {
@@ -342,4 +342,46 @@ input.red::-webkit-input-placeholder {
 
 .report-bug {
   font-size: 11px;
+}
+
+#switch{
+height:80px;
+position: absolute;
+  top: 0px;
+  right: 50px;
+
+}
+
+#button-container {
+  width: 40px;
+  height: 10px;
+  position: absolute;
+  right: 0;
+  top: 50px;
+  border-radius: 20%;}
+
+#switch.disable #button-container {
+  background-color : #000000;
+}
+
+#switch.enable  #button-container{
+  background-color : green;
+}
+
+#button{
+ width: 20px;
+  height: 20px;
+  background-color: #FFFFFF;
+  position: absolute;
+  margin-top: -5px;
+  border: 1px solid #000000;
+  border-radius: 50%;
+}
+
+#switch.disable  #button{
+  margin-left:-5px;
+}
+
+#switch.enable  #button{
+  margin-left:25px;
 }

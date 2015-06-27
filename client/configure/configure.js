@@ -73,6 +73,9 @@
     $('input[name="default-port"]').value = config.port;
   }
 
+
+
+
   /**
    * Templates.
    */
@@ -149,6 +152,36 @@
       save();
     }
   };
+
+  function switchForceReload(value){
+    var el =  $('#switch');
+    el.classList.remove('hidden');
+    if (value == 'enable') {
+      el.classList.remove('disable');
+      el.classList.add('enable');
+    }else{ 
+      el.classList.remove('enable');
+      el.classList.add('disable');
+    }  
+    triggerEvent('save_force_reload', value);
+  }
+
+  listenToEvent('force_reload', function(e) {
+    var value = e.data;
+    switchForceReload(value);
+  });
+
+
+  $('#switch').onclick = function (e) {
+    var el =  $('#switch');
+    if (el.classList.contains('enable')) {
+       switchForceReload('disable');
+    }else{
+      switchForceReload('enable');
+    };
+  };
+
+
 
   $('form').onchange = save;
 

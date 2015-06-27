@@ -128,6 +128,11 @@
       this.saveConfig();
       this.startNewSession();
     });
+    this.listenToPanel('save_force_reload', function(e) {
+      this.site.forceReloading= e.data;
+      this.session.setForceReloading(this.site.forceReloading);
+      this.saveConfig();
+    });
     this.listenToPanel('retry', this.startNewSession);
     this.listenToPanel('enable_for_host', this.enableForHost);
     this.panelEventBuffer.forEach(function(event) {
@@ -211,6 +216,8 @@
     this.getLocation(
       function (host) {
         var site = this.getSite(host);
+        this.site = site;
+
         if (site) {
           this.session = new Session(
             site.server || host,
@@ -219,6 +226,9 @@
             this.createLogger
           );
           this.session.start();
+          if(this.site.forceReloading !== undefined){
+            this.session.setForceReloading(this.site.forceReloading);
+          }
         } else {
           this.status('disabled');
         }
@@ -269,6 +279,11 @@
         break;
       case 'connected':
         text = 'Connected';
+        if(this.site.forceReloading !== undefined){
+          this.triggerEvent('force_reload', this.site.forceReloading );
+        }else{
+          this.triggerEvent('force_reload', 'disable' );
+        }
         break;
       case 'started':
         text = 'Started';

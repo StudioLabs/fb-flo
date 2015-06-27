@@ -40,10 +40,12 @@
     this.createLogger = createLogger;
     this.logger = createLogger('session');
     this.devResources = [];
+    this.documents = [];
     this.openedSources = {};
     this.url = null;
     this.conn = null;
     this.listeners = {};
+    this.forceReloading = false;
     this.messageHandler = this.messageHandler.bind(this);
     this.started = this.started.bind(this);
   }
@@ -74,6 +76,18 @@
     } else {
       this.start();
     }
+  };
+
+  
+
+   /**
+   * Force the reloading of the page
+   *
+   * @public
+   */
+
+  Session.prototype.setForceReloading = function(value) {
+    this.forceReloading = (value == 'enable')? true : false;
   };
 
   /**
@@ -126,7 +140,10 @@
        if(url !== ''){
           this.devResources[url] = res;
        }
+     }else if(res.type == "document"){
+      this.documents.push(res);
      }
+
   };
 
  /**
@@ -311,6 +328,12 @@
 
   Session.prototype.messageHandler = function(updatedResource) {
 
+    if(this.forceReloading === true){
+      this.reload();
+     // chrome.devtools.inspectedWindow.reload(true);
+      return;
+    }
+
     if(updatedResource.action == 'baseUrl' && this.conn && this.url){
           return this.conn.sendMessage({
              action : 'baseUrl',
@@ -328,7 +351,7 @@
 
       this.logger.log('push', updatedResource.resourceURL);
 
-      if (updatedResource.reload !== undefined) {
+      if (updatedResource.reload === true) {
         chrome.devtools.inspectedWindow.reload();
         return;
       }
@@ -384,11 +407,9 @@
 
           var setContent = function() {
           resource.setContent(updatedResource.content, true, function (status) {
-            this.logger.log(status.code);
-
             if (status.code != 'OK') {
               this.logger.error(
-                'flo failed to update, this shouldn\'t happen please report it: ' +
+                'liveEdit failed to update, this shouldn\'t happen please report it: ' +
                   JSON.stringify(status)
               );
             }
@@ -446,38 +467,29 @@
         'var data = '+data+' ;'+
         'console.log("[LiveEdit] '+title+'",data);' +
         '})()';
-    chrome.devtools.inspectedWindow.eval(script);
 
+    chrome.devtools.inspectedWindow.eval(script);
   }
 
+  
+  Session.prototype.reload = function(url) {
+     var script = '(function() {' +
+      'window.location.reload();' +
+      '})()';
+       chrome.devtools.inspectedWindow.eval(script);
+  };
 
   Session.prototype.triggerReloadEvent = function(url) {
 
 
     if( typeof url == 'string'){
-
        var script = '(function() {' +
       'var time = new Date().getTime();'+
       'console.log("[LiveEdit] '+url+' has just been updated ["+ time +"] ");' +
       '})()';
 
        chrome.devtools.inspectedWindow.eval(script);
-
     }
-
-
-
-     /* var updateFnStr = '(function() {' +
-        'try {' +
-          '(' + resource.update + ')(window, ' + JSON.stringify(resource.resourceURL) + ');' +
-          '} catch(ex) {' +
-            'console.error("There was an error while evaluating the live-edit update function. ' +
-            'Please check the function\'s code and review the README guidelines regarding it!", ex);' +
-          '}' +
-        '})()';
-        chrome.devtools.inspectedWindow.eval(updateFnStr);
-
-        */
 
 
   };
