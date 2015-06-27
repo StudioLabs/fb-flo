@@ -292,7 +292,7 @@
           delete resource.sync;
         }else if(resource.resourceName !== undefined ){
           chrome.devtools.panels.openResource(resource.resourceName, null, function() {});
-          this.triggerReloadEvent(resource.resourceName);
+          this.triggerUpdateEvent(resource.resourceName);
           delete resource.resourceName;
         }
 
@@ -302,7 +302,7 @@
         if(resource.resourceName !== undefined ){
            chrome.devtools.panels.openResource(updatedResource.url, null, function() {});
 
-           this.triggerReloadEvent(updatedResource.url);
+           this.triggerUpdateEvent(updatedResource.url);
           delete resource.resourceName;
         }else{
           this.logger.log(' update');
@@ -471,15 +471,34 @@
     chrome.devtools.inspectedWindow.eval(script);
   }
 
-  
-  Session.prototype.reload = function(url) {
+  Session.prototype.triggerEvent = function(event,data) {
+     var dataB64 = window.btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+     var data = decodeURIComponent(escape(window.atob(dataB64)));
+ 
      var script = '(function() {' +
-      'window.location.reload();' +
+      'var event = new Event(\''+event+'\');' +
+      'event.data = '+data+' ;'+
+      'window.dispatchEvent(event);' +
       '})()';
-       chrome.devtools.inspectedWindow.eval(script);
+      
+      chrome.devtools.inspectedWindow.eval(script);
   };
 
-  Session.prototype.triggerReloadEvent = function(url) {
+  Session.prototype.reload = function(url) {
+
+    var script = '(function() {' +
+      'window.addEventListener(\'live-edit-reload\',function(){'+
+      'console.log("[LiveEdit] reloading the page...");'+
+      'window.location.reload();'+
+      '}); '+
+    '})()';
+
+    this.triggerEvent('live-edit-reload',{});
+
+    chrome.devtools.inspectedWindow.eval(script);
+  };
+
+  Session.prototype.triggerUpdateEvent = function(url) {
 
 
     if( typeof url == 'string'){
