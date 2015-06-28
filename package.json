@@ -1,6 +1,6 @@
 {
   "name": "live-edit",
-  "version": "1.0.6",
+  "version": "1.0.9",
   "description": "Modify running web apps without reloading",
   "repository": {
     "type": "git",
@@ -12,5 +12,10 @@
     "websocket": "~1.0.8",
     "sane": "~1.0.0"
   },
-  "bin": "./bin/live-edit"
+  "bin": "./bin/live-edit",
+  "devDependencies": {
+    "combine-source-map": "^0.6.1",
+    "lodash": "^3.9.3",
+    "utf8": "^2.1.0"
+  }
 }
