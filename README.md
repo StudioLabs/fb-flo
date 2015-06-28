@@ -1,7 +1,7 @@
 LiveEdit
 ---
 
-LiveEdit is a Chrome extension that lets you modify running apps without reloading. It's easy to integrate with your build system, dev environment, and can be used with your favorite editor. Read more about it on [https://studiolabs.github.io/LiveEdit/](https://StudioLabs.github.io/LiveEdit/)
+LiveEdit is a Chrome extension that lets you modify running apps without reloading. It's easy to integrate with your build system, dev environment, and can be used with your favorite editor. Read more about it on [https://studiolabs.github.io/live-edit/](https://StudioLabs.github.io/live-edit/)
 
 ## Usage
 
@@ -10,13 +10,13 @@ LiveEdit is made up of a server and client component. This will guide through co
 ### 1. Configure LiveEdit server
 
 ```
-$ npm install LiveEdit
+$ npm install live-edit
 ```
 
 LiveEdit exports a single `LiveEdit` function to start the server. Here is an example where you have your source JavaScript and CSS files in the root directory and your build step involves bundling both into a respective `bundle.js`, `bundle.css`.
 
 ```js
-var liveEdit = require('LiveEdit'),
+var liveEdit = require('live-edit'),
 
 var server = liveEdit({
   port: 8888,
