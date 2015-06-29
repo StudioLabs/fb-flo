@@ -10,14 +10,14 @@
   "author": "StudioLabs",
   "dependencies": {
     "websocket": "~1.0.8",
-    "sane": "~1.0.0"
-  },
-  "bin": "./bin/live-edit",
-  "devDependencies": {
+    "sane": "~1.0.0",
     "combine-source-map": "^0.6.1",
     "handlebars": "^3.0.3",
     "lodash": "^3.9.3",
     "through": "^2.3.7",
     "utf8": "^2.1.0"
+  },
+  "bin": "./bin/live-edit",
+  "devDependencies": {
   }
 }
