@@ -10,14 +10,20 @@
   "author": "StudioLabs",
   "dependencies": {
     "websocket": "~1.0.8",
-    "sane": "~1.0.0",
+    "sane": "~1.0.0",    
+    "chalk": "^1.0.0",
     "combine-source-map": "^0.6.1",
+    "gulp-util": "^3.0.6",
     "handlebars": "^3.0.3",
+    "interpret": "^0.6.2",
+    "liftoff": "^2.1.0",
     "lodash": "^3.9.3",
+    "minimist": "^1.1.1",
     "through": "^2.3.7",
-    "utf8": "^2.1.0"
+    "utf8": "^2.1.0",
+    "v8flags": "^2.0.9"
   },
-  "bin": "./bin/live-edit",
+  "bin": "./bin/live",
   "devDependencies": {
   }
 }
