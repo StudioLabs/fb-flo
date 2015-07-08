@@ -339,6 +339,9 @@
              action : 'baseUrl',
              url : this.url
           });
+      }else if(updatedResource.action == 'error'){
+         this.console('[error] '+updatedResource.resourceURL, updatedResource.contents);
+
       }else if(updatedResource.action == 'sync'){
 
         this.logger.log('sync', updatedResource.resourceURL);
