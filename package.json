@@ -9,15 +9,16 @@
   "main": "index.js",
   "author": "StudioLabs",
   "dependencies": {
-    "websocket": "~1.0.8",
-    "sane": "~1.0.0",
     "combine-source-map": "^0.6.1",
+    "connect": "^3.4.0",
     "handlebars": "^3.0.3",
     "lodash": "^3.9.3",
+    "sane": "~1.0.0",
+    "serve-static": "^1.10.0",
     "through": "^2.3.7",
-    "utf8": "^2.1.0"
+    "utf8": "^2.1.0",
+    "websocket": "^1.0.21"
   },
   "bin": "./bin/live-edit",
-  "devDependencies": {
-  }
+  "devDependencies": {}
 }
