@@ -131,13 +131,16 @@
 
 	Session.prototype.registerResource = function(res) {
 		// exclude ressource that are data
-		if (res.url.substr(0, 4) !== 'data' && res.type !== "document") {
+
+		if (res.url.substr(0, 4) !== 'data' && res.url.indexOf('chrome-extension') == -1) {
 			var url = res.url.split('?')[0];
 			if (url !== '') {
+				if (res.type == "document" && url[url.length - 1] === '/') {
+					this.devResources[url + 'index.html'] = res;
+				}
+
 				this.devResources[url] = res;
 			}
-		}else if (res.type == "document") {
-			this.documents.push(res);
 		}
 
 	};
