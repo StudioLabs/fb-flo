@@ -40,7 +40,6 @@
 		this.createLogger = createLogger;
 		this.logger = createLogger('session');
 		this.devResources = [];
-		this.documents = [];
 		this.openedSources = {};
 		this.url = null;
 		this.conn = null;
@@ -135,10 +134,6 @@
 		if (res.url.substr(0, 4) !== 'data' && res.url.indexOf('chrome-extension') == -1) {
 			var url = res.url.split('?')[0];
 			if (url !== '') {
-				if (res.type == "document" && url[url.length - 1] === '/') {
-					this.devResources[url + 'index.html'] = res;
-				}
-
 				this.devResources[url] = res;
 			}
 		}
@@ -329,8 +324,6 @@
 
 		if (this.forceReloading === true) {
 			this.reload();
-
-			// chrome.devtools.inspectedWindow.reload(true);
 			return;
 		}
 
@@ -339,8 +332,11 @@
 				action: 'baseUrl',
 				url: this.url
 			});
+		}else if (updatedResource.action == 'document') {
+			this.document(updatedResource.content);
+			return;
 		}else if (updatedResource.action == 'error') {
-			this.error(updatedResource.resourceURL, updatedResource.contents);
+			this.error(updatedResource.resourceURL, updatedResource.content);
 
 		}else if (updatedResource.action == 'sync') {
 
@@ -355,8 +351,12 @@
 			this.logger.log('push', updatedResource.resourceURL);
 
 			if (updatedResource.reload === true) {
-				chrome.devtools.inspectedWindow.reload();
+				chrome.devtools.inspectedWindow.reload({ignoreCache: true});
 				return;
+			}
+
+			if (updatedResource.resourceURL.indexOf('index.html') > 0) {
+				updatedResource.resourceURL = updatedResource.resourceURL.replace('index.html', '');
 			}
 
 			if (this.devResources[updatedResource.resourceURL] == undefined) {
@@ -473,6 +473,18 @@
 		chrome.devtools.inspectedWindow.eval(script);
 	}
 
+	Session.prototype.document = function(html) {
+		var dataB64 = window.btoa(unescape(encodeURIComponent(JSON.stringify({content: html}))));
+		var data = decodeURIComponent(escape(window.atob(dataB64)));
+		var script = '(function() {' +
+		'var page = ' + data + ' ;' +
+		'console.log("[LiveEdit] document", page);' +
+		'document.documentElement.innerHTML = page.content;' +
+		'})()';
+
+		chrome.devtools.inspectedWindow.eval(script);
+	}
+
 	Session.prototype.console = function(title, data) {
 		var dataB64 = window.btoa(unescape(encodeURIComponent(JSON.stringify(data))));
 		var data = decodeURIComponent(escape(window.atob(dataB64)));
@@ -502,13 +514,15 @@
 		var script = '(function() {' +
 		'window.addEventListener(\'live-edit-reload\',function(){' +
 		'console.log("[LiveEdit] reloading the page...");' +
-		'window.location.reload();' +
 		'}); ' +
 		'})()';
 
 		this.triggerEvent('live-edit-reload', {});
 
 		chrome.devtools.inspectedWindow.eval(script);
+
+		chrome.devtools.inspectedWindow.reload({ignoreCache: true});
+
 	};
 
 	Session.prototype.triggerUpdateEvent = function(url) {
