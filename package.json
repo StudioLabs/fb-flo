@@ -1,6 +1,6 @@
 {
   "name": "live-edit",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "description": "Modify running web apps without reloading",
   "repository": {
     "type": "git",
@@ -17,6 +17,7 @@
     "gulp-util": "^3.0.6",
     "handlebars": "^3.0.3",
     "lodash": "^3.9.3",
+    "opn": "^3.0.2",
     "sane": "~1.0.0",
     "serve-index": "^1.7.2",
     "serve-static": "^1.10.0",
