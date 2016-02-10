@@ -131,7 +131,7 @@
 	Session.prototype.registerResource = function(res) {
 		// exclude ressource that are data
 
-		if (res.url.substr(0, 4) !== 'data' && res.url.indexOf('chrome-extension') == -1) {
+		if (res.url.substr(0, 4) == 'http') {
 			var url = res.url.split('?')[0];
 			if (url !== '') {
 				this.devResources[url] = res;
@@ -413,6 +413,10 @@
 						'liveEdit failed to update, this shouldn\'t happen please report it: ' +
 						JSON.stringify(status)
 						);
+					}else{
+						if(updatedResource.event !== undefined){
+							this.triggerEvent(updatedResource.event, {});
+						}
 					}
 				}.bind(this));
 			}.bind(this);
@@ -460,7 +464,6 @@
 		};
 	}
 
-	console.table(["apples", "oranges", "bananas"]);
 	Session.prototype.error = function(title, data) {
 		data.message = "[LiveEdit] " + data.message;
 		var dataB64 = window.btoa(unescape(encodeURIComponent(JSON.stringify(data))));
