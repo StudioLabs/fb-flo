@@ -1,6 +1,6 @@
 {
   "name": "live-edit",
-  "version": "1.2.5",
+  "version": "1.2.6",
   "description": "Modify running web apps without reloading",
   "repository": {
     "type": "git",
