@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
-var liveEdit = require('../');
+var devtoolsLive = require('../');
 var path = require('path');
 
 var file = path.join(
   process.cwd(),
-  process.argv[2] 
+  process.argv[2]
 );
 
 var config = {};
@@ -17,7 +17,7 @@ try {
 
 config.options = config.options || {};
 
-var f = liveEdit(
+var f = devtoolsLive(
   config.options.dir || process.cwd(),
   config.options,
   config.resolver

@@ -56,12 +56,12 @@
 	   */
 
 	Session.prototype.start = function() {
-		this.logger.log('Starting LiveEdit for host', this.host);
+		this.logger.log('Starting DevtoolsLive for host', this.host);
 		this.getLocation(this.setLocation);
 	};
 
 	/**
-	   * Similar to restart but does only what's needed to get LiveEdit started.
+	   * Similar to restart but does only what's needed to get DevtoolsLive started.
 	   *
 	   * @public
 	   */
@@ -410,7 +410,7 @@
 				resource.setContent(updatedResource.content, true, function(status) {
 					if (status.code != 'OK') {
 						this.logger.error(
-						'liveEdit failed to update, this shouldn\'t happen please report it: ' +
+						'devtoolsLive failed to update, this shouldn\'t happen please report it: ' +
 						JSON.stringify(status)
 						);
 					}else{
@@ -465,7 +465,7 @@
 	}
 
 	Session.prototype.error = function(title, data) {
-		data.message = "[LiveEdit] " + data.message;
+		data.message = "[DevtoolsLive] " + data.message;
 		var dataB64 = window.btoa(unescape(encodeURIComponent(JSON.stringify(data))));
 		var data = decodeURIComponent(escape(window.atob(dataB64)));
 		var script = '(function() {' +
@@ -481,7 +481,7 @@
 		var data = decodeURIComponent(escape(window.atob(dataB64)));
 		var script = '(function() {' +
 		'var page = ' + data + ' ;' +
-		'console.log("[LiveEdit] document", page);' +
+		'console.log("[DevtoolsLive] document", page);' +
 		'document.documentElement.innerHTML = page.content;' +
 		'})()';
 
@@ -493,7 +493,7 @@
 		var data = decodeURIComponent(escape(window.atob(dataB64)));
 		var script = '(function() {' +
 		'var data = ' + data + ' ;' +
-		'console.log("[LiveEdit] ' + title + '",data);' +
+		'console.log("[DevtoolsLive] ' + title + '",data);' +
 		'})()';
 
 		chrome.devtools.inspectedWindow.eval(script);
@@ -515,12 +515,12 @@
 	Session.prototype.reload = function(url) {
 
 		var script = '(function() {' +
-		'window.addEventListener(\'live-edit-reload\',function(){' +
-		'console.log("[LiveEdit] reloading the page...");' +
+		'window.addEventListener(\'devtools-live-reload\',function(){' +
+		'console.log("[DevtoolsLive] reloading the page...");' +
 		'}); ' +
 		'})()';
 
-		this.triggerEvent('live-edit-reload', {});
+		this.triggerEvent('devtools-live-reload', {});
 
 		chrome.devtools.inspectedWindow.eval(script);
 
@@ -533,7 +533,7 @@
 		if (typeof url == 'string') {
 			var script = '(function() {' +
 			'var time = new Date().getTime();' +
-			'console.log("[LiveEdit] ' + url + ' has just been updated ["+ time +"] ");' +
+			'console.log("[DevtoolsLive] ' + url + ' has just been updated ["+ time +"] ");' +
 			'})()';
 
 			chrome.devtools.inspectedWindow.eval(script);

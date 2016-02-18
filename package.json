@@ -1,10 +1,10 @@
 {
-  "name": "live-edit",
+  "name": "devtools-live",
   "version": "1.2.6",
   "description": "Modify running web apps without reloading",
   "repository": {
     "type": "git",
-    "url": "git@github.com:StudioLabs/live-edit.git"
+    "url": "git@github.com:StudioLabs/devtools-live.git"
   },
   "main": "index.js",
   "author": "StudioLabs",
@@ -29,6 +29,6 @@
     "utf8": "^2.1.0",
     "websocket": "^1.0.21"
   },
-  "bin": "./bin/live-edit",
+  "bin": "./bin/devtools-live",
   "devDependencies": {}
 }
