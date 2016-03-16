@@ -20,8 +20,6 @@ var LiveDevtools = require('devtools-live');
 
 
 var live = new LiveDevtools({
-	debug:true,
-	verbose:true,
 	devtools : {
 		directory: './client/',
 		port: 8888
