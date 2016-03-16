@@ -43,19 +43,13 @@ function Live(options) {
 	this.options = {};
 
 	var options =  _.assign({
-		port:8888,
 		verbose: false,
-		debug: false,
-		name: 'Live - ' + new Date().getTime(),
-		emitter: newEmitter()
+		debug: false
 	}, options);
 
 	this.config(options);
 
-	this.events  = this.options.emitter;
-	this.name = this.options.name;
-
-	this.watch = [];
+	this.watcher = [];
 	this.file = [];
 	this.url = [];
 	this.sync = [];
@@ -133,7 +127,7 @@ Live.prototype.start = function(options) {
 Live.prototype.connect = function(options) {
 
 	var httpConfig = _.assign({
-			log: this.options.verbose,
+			log: this.options.verbose ,
 			debug: this.options.debug,
 			open: false,
 			parent: this
@@ -196,24 +190,18 @@ Live.prototype.initPlugins = function(plugins) {
  */
 Live.prototype.watch = function(options) {
 
+
 	for (var folder  in options) {
 		var params = options[folder];
 		params =  _.assign({
-			files:  [],
-			useWatchman: false,
-			useFilePolling:  false,
-			watchDotFiles: false
+			files:  []
 		}, params);
 
-		this.watch[folder] = new sane(path.resolve(folder), {
-			glob: params.files,
-			poll: params.useFilePolling,
-			interval: params.pollingInterval,
-			watchman: params.useWatchman,
-			dot: params.watchDotFiles
+		this.watcher[folder] = new sane(path.resolve(folder), {
+			glob: params.files
 		});
-		this.watch[folder].on('change', this.fileEvent);
-		this.watch[folder].on('error', this.onError);
+		this.watcher[folder].on('change', this.fileEvent);
+		this.watcher[folder].on('error', this.onError);
 		this.log("start watching ", folder);
 	}
 
@@ -312,7 +300,7 @@ Live.prototype.getClientPageUrl = function() {
 
 Live.prototype.stopWatching = function(cb) {
 	var self = this;
-	this.watch.forEach(function(watch, folder) {
+	this.watcher.forEach(function(watch, folder) {
 		watch.close();
 		self.log("stop watching ", folder);
 	}.bind(this));
