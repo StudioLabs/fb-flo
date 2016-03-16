@@ -47,11 +47,12 @@ function Live(options) {
 	this.sync = [];
 
 	var MemoryFileSystem = require("memory-fs");
-
 	process.live = [];
 	process.fs = new MemoryFileSystem();
 
 	this.log = logger(this.options.verbose, 'Live');
+	this.debug = logger(this.options.debug, 'Live');
+
 	this.onError = this.error.bind(this);
 	this.fileEvent = this.onFileChange.bind(this);
 
@@ -144,18 +145,12 @@ Live.prototype.devtools = function(options) {
 	}
 
 	options.directory = path.resolve(options.directory);
-
-	if(options.destination == undefined){
-		options.destination = options.directory;
-	}
-
-	options.destination = path.resolve(options.destination);
+	options.destination = path.resolve(options.destination || options.directory) ;
 
 	var wsConfig = _.assign({
 		port: this.options.port,
 		log: this.options.verbose,
 		debug: this.options.debug,
-		reload: false,
 		parent: this
 	}, options);
 
@@ -301,7 +296,7 @@ Live.prototype.stopWatching = function(cb) {
 	var self = this;
 	this.watcher.forEach(function(watch, folder) {
 		watch.close();
-		self.log("stop watching ", folder);
+		self.debug("stop watching ", folder);
 	}.bind(this));
 	if (cb !== undefined) {
 		cb();
@@ -316,7 +311,7 @@ Live.prototype.stopWatching = function(cb) {
  */
 
 Live.prototype.broadcast = function(message) {
-	this.log('broadcast', message);
+	this.debug('broadcast', message);
 
 	this.ws.broadcast(message);
 };
@@ -368,7 +363,7 @@ Live.prototype.onUpdateAction = function(message) {
 Live.prototype.onSyncAction = function(message) {
 	var originalFileContent = '';
 	var url = message.url.replace(this.getClientHostname() + '/', '');
-	console.log('sync',url);
+	this.debug('sync',url);
 	if (this.sync[url] !== undefined) {
 		var file = this.sync[url];
 		if (file.sync !== undefined) {

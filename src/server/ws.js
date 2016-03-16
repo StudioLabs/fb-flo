@@ -169,7 +169,6 @@ WSServer.prototype.broadcast = function(msg) {
  */
 
 WSServer.prototype.sendMessage = function(msg) {
-
 	this.debug('sendMessage', msg);
 	if (msg.content !== undefined && msg.content.length >= 50000) {
 		//send message by part
