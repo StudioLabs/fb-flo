@@ -184,18 +184,21 @@ Live.prototype.initPlugins = function(plugins) {
  */
 Live.prototype.watch = function(options) {
 
-
 	for (var folder  in options) {
 		var params = options[folder];
 		params =  _.assign({
 			files:  []
 		}, params);
 
-		this.watcher[folder] = new sane(path.resolve(folder), {
+		var folderPath = path.resolve(folder);
+		this.watcher[folder] = new sane(folderPath, {
 			glob: params.files
 		});
-		this.watcher[folder].on('change', this.fileEvent);
-		this.watcher[folder].on('error', this.onError);
+
+		this.watcher[folder].on('change', function(filepath, root){
+			this.fileEvent(root+'/'+filepath);
+		}.bind(this));
+		this.watcher[folder].on('error', this.onError, this);
 		this.log("start watching ", folder);
 	}
 
@@ -213,7 +216,10 @@ Live.prototype.onFileChange = function(filepath) {
 	if(this.file[filepath] !== undefined){
 		return this.file[filepath].plugin.resolve(this,this.file[filepath]);
 	}else{
+		console.log(this.options.devtools.directory);
+
 		var fileUrl = filepath.replace(this.options.devtools.directory + '/', '');
+
 		return this.resolve(filepath, fileUrl) ;
 	}
 };
@@ -228,8 +234,9 @@ Live.prototype.onFileChange = function(filepath) {
 Live.prototype.resolve = function(filepath, fileUrl) {
 	this.log('resolve', filepath);
 	this.broadcast({
+		action: 'update',
 		resourceURL: fileUrl,
-		contents: fs.readFileSync(filepath)
+		content: fs.readFileSync(filepath).toString()
 	});
 };
 
