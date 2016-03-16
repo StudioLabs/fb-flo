@@ -16,17 +16,9 @@ var _ = require('lodash');
 var sane = require('sane');
 var WS = require('./server/ws');
 var HTTP = require('./server/http');
+var util = require("gulp-util");
 var EventEmitter = require('events').EventEmitter;
 
-/**
- * Event emitter factory
- * @returns {EventEmitter}
- */
-function newEmitter() {
-	var emitter = new EventEmitter();
-	emitter.setMaxListeners(20);
-	return emitter;
-}
 
 /**
  * Top-level API for Live. Defaults params and instantiates `Live`.
@@ -149,7 +141,17 @@ Live.prototype.connect = function(options) {
 
 Live.prototype.devtools = function(options) {
 
+	if (options.directory == undefined) {
+		util.log(util.colors.yellow("please define a source directory"));
+		process.exit(0);
+	}
+
 	options.directory = path.resolve(options.directory);
+
+	if(options.destination == undefined){
+		options.destination = options.directory;
+	}
+
 	options.destination = path.resolve(options.destination);
 
 	var wsConfig = _.assign({
