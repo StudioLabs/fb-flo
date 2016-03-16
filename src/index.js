@@ -46,9 +46,6 @@ function Live(options) {
 	this.url = [];
 	this.sync = [];
 
-	this.active = false;
-	this.paused = true;
-
 	var MemoryFileSystem = require("memory-fs");
 
 	process.live = [];
