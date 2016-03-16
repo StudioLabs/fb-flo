@@ -1,6 +1,6 @@
 {
 	"name": "Devtools Live",
-	"version": "0.1",
+	"version": "0.2",
 	"description": "Edit in live your web apps without reloading",
 	"devtools_page": "live.html",
 	"manifest_version": 2,
