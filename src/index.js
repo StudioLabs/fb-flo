@@ -44,8 +44,10 @@ function Live(options) {
 	this.config(options);
 
 	this.watcher = [];
+
 	this.file = [];
 	this.url = [];
+	this.dev = [];
 	this.sync = [];
 
 	var MemoryFileSystem = require("memory-fs");
@@ -223,8 +225,6 @@ Live.prototype.onFileChange = function(filepath) {
 	if(this.file[filepath] !== undefined){
 		return this.file[filepath].plugin.resolve(this,this.file[filepath]);
 	}else{
-		console.log(this.options.devtools.directory);
-
 		var fileUrl = filepath.replace(this.options.devtools.directory + '/', '');
 
 		return this.resolve(filepath, fileUrl) ;
@@ -300,6 +300,23 @@ Live.prototype.getClientPageUrl = function() {
 	return this.ws.pageUrl;
 };
 
+
+/**
+ * Register a File.
+ *
+ * @public
+ */
+Live.prototype.registerFile = function(file) {
+
+	this.url[file.url] = file;
+	this.sync[file.name] = file;
+	this.file[file.path] = file;
+
+	if(file.dev !== undefined){
+	  this.dev[file.dev] = file;
+	}
+
+};
 /**
  * Stop watching
  *
