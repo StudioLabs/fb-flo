@@ -26,7 +26,6 @@ module.exports = function(root, options) {
 
 	    try{
 
-
 	    if(process.fs.existsSync(filepath)){
 	    	var content = process.fs.readFileSync(filepath);
 	    }else{
@@ -68,7 +67,6 @@ module.exports = function(root, options) {
 				var start = content.indexOf(tag);
 				if(start > 0){
 					var end = content.lastIndexOf(tag) +tag.length;
-					fs.writeFileSync(root+'/test.html',process.live[name]);
 					var content = content.substr(0, start)+ process.live[name] + content.substr(end);
 				}
 			}
@@ -79,8 +77,6 @@ module.exports = function(root, options) {
 		return res.end(content, 'binary');
 
 	}
-
-	devtoolsLiveMiddleware.fileSystem = fs;
 
 	return devtoolsLiveMiddleware;
 }

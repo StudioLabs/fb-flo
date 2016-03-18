@@ -17,6 +17,7 @@ var sane = require('sane');
 var WS = require('./server/ws');
 var HTTP = require('./server/http');
 var util = require("gulp-util");
+var mkdirp = require('mkdirp');
 var EventEmitter = require('events').EventEmitter;
 
 
@@ -36,7 +37,8 @@ function Live(options) {
 
 	var options =  _.assign({
 		verbose: false,
-		debug: false
+		debug: false,
+		memory : true
 	}, options);
 
 	this.config(options);
@@ -48,7 +50,12 @@ function Live(options) {
 
 	var MemoryFileSystem = require("memory-fs");
 	process.live = [];
-	process.fs = new MemoryFileSystem();
+	if(this.options.memory == true){
+		process.fs = new MemoryFileSystem();
+	}else{
+		process.fs = fs;
+		process.fs.mkdirpSync = mkdirp.sync;
+	}
 
 	this.log = logger(this.options.verbose, 'Live');
 	this.debug = logger(this.options.debug, 'Live');
