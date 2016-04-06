@@ -139,23 +139,20 @@ WSServer.prototype.onClose = function(ws) {
  */
 
 WSServer.prototype.broadcast = function(msg) {
-	if (msg.resourceURL !== undefined) {
-		if (msg.resourceURL[0] == '/') {
-			msg.resourceURL = msg.resourceURL.substr(1);
+	if (msg.url !== undefined) {
+		if (msg.url[0] == '/') {
+			msg.url = msg.url.substr(1);
 		}
 
 		var hostname = this.hostname;
-		if (msg.hostname !== undefined) {
-			hostname = msg.hostname;
+		if (hostname != null){
+
+			if( hostname[hostname.length - 1] == '/') {
+				hostname = hostname.substr(0, hostname.length - 1);
+			}
+
+			msg.url = hostname + '/' + msg.url;
 		}
-
-		if (hostname[hostname.length - 1] == '/') {
-			hostname = hostname.substr(0, hostname.length - 1);
-		}
-
-		msg.resourceURL = hostname + '/' + msg.resourceURL;
-
-		this.debug('broadcast', msg.resourceURL);
 	}
 
 	this.sendMessage(msg);

@@ -99,7 +99,7 @@
 	DevtoolsLiveClient.prototype.createPanel = function(callback) {
 		var self = this;
 		chrome.devtools.panels.create(
-			'DevtoolsLive',
+			'Live',
 			'',
 			'configure/configure.html',
 			function (panel) {

@@ -15,7 +15,7 @@ var fs = require('fs');
 var EventEmitter = require('events').EventEmitter;
 var connect = require("connect");
 var util = require("gulp-util");
-var middlewareDevTools = require("../middleware");
+var middlewareDevTools = require("devtools-live-middleware");
 
 module.exports = HttpServer;
 
