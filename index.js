@@ -307,8 +307,15 @@ Live.prototype.onUpdateAction = function(message) {
 Live.prototype.onSyncAction = function(message) {
 	var url = message.src.replace(this.getClientHostname() + '/', '');
 	this.debug('sync',url);
+
+	var file;
 	if (this.url[url] !== undefined) {
-		var file = this.url[url];
+		file = this.url[url];
+	}else if (this.src[url] !== undefined) {
+		file = this.src[url];
+	}
+
+	if (file !== undefined) {
 		if (file.sync !== undefined) {
 			originalFileContent = utf8.decode(file.sync);
 			delete file.sync;
