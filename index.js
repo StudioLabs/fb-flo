@@ -283,9 +283,17 @@ Live.prototype.onUpdateAction = function(message) {
 	var url = message.src.replace(this.getClientHostname() + '/', '');
 	this.debug('update',url);
 	this.debug(this.url[url]);
+
+	var file;
 	if (this.url[url] !== undefined) {
-		this.url[url].content = message.content;
-		fs.writeFileSync(this.url[url].path, message.content);
+		file = this.url[url];
+	}else if (this.src[url] !== undefined) {
+		file = this.src[url];
+	}
+
+	if (file !== undefined) {
+		file.content = message.content;
+		fs.writeFileSync(file.path, message.content);
 	}
 };
 
