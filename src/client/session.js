@@ -185,6 +185,7 @@
 				this.registerResource(res);
 			}.bind(this));
 
+
 			// After we register the current resources, we listen to the
 			// onResourceAdded event to push on more resources lazily fetched
 			// to our array.
@@ -195,6 +196,9 @@
 	this.registerResource(res);
         }.bind(this)
       );
+
+
+			console.log('ressource', this.devResources);
 
 			this.console(' ', 'Ready !');
 			callback();
@@ -241,13 +245,13 @@
 	Session.prototype.started = function() {
 		this.logger.log('Started');
 		this.status('started');
-		if (this.conn && this.url) {
+	/*	if (this.conn && this.url) {
 			this.conn.sendMessage({
 				action: 'baseUrl',
 				url: this.url
 			});
 		}
-
+*/
 		this.listen(
 		chrome.devtools.network,
 		'onNavigated',
@@ -269,38 +273,28 @@
 	   */
 	Session.prototype.resourceUpdatedHandler = function(updatedResource, content) {
 
-		var url = updatedResource.url.split('?')[0];
-		if (url !== '' && this.devResources[url] !== undefined) {
-			var resource = this.devResources[url];
+		var src = updatedResource.url.split('?')[0];
+		if (src !== '' && this.devResources[src] !== undefined) {
+			var resource = this.devResources[src];
 
-			if (resource.sync !== undefined) {
-				var sync = resource.sync;
-				var record = {
-					action: 'sync',
-					url: sync
-				};
-				this.conn.sendMessage(record);
-				delete resource.sync;
-			}else {
-				if (resource.resourceName !== undefined) {
-					if (!this.openedSources[resource.resourceName] && (content.indexOf('sourceMappingURL') > 0)) {
-						this.openedSources[resource.resourceName] = true;
-						chrome.devtools.panels.openResource(resource.resourceName, null, function() {});
-					}
+			if (resource.resourceName !== undefined) {
 
-					this.triggerUpdateEvent(url);
-					delete resource.resourceName;
+				this.triggerUpdateEvent(resource.resourceName);
 
-				}else {
-
-					this.conn.sendMessage({
-						action: 'update',
-						url: url,
-						content: content
-					});
-
-				}
-
+			}else if (resource.sync !== undefined) {
+					var sync = resource.sync;
+					var record = {
+						action: 'sync',
+						src: sync
+					};
+					this.conn.sendMessage(record);
+					delete resource.sync;
+			} else{
+				this.conn.sendMessage({
+					action: 'update',
+					src: src,
+					content: content
+				});
 			}
 
 		}
@@ -313,29 +307,40 @@
     * @param { object }	resource
     */
 
-	 Session.prototype.updateResource = function(resource) {
+	 Session.prototype.updateResource = function(resource, update) {
+	 	console.log('updateResource',resource, update);
 
 		var setContent = function() {
-			resource.setContent(resource.content, true, function(status) {
+			resource.setContent(update.content, true, function(status) {
 				if (status.code != 'OK') {
 					this.logger.error(
 					'devtoolsLive failed to update, this shouldn\'t happen please report it: ' +
 					JSON.stringify(status)
 					);
 				}else {
-					if (ressource.event !== undefined) {
-						this.triggerEvent(ressource.event, {});
+					if (update.event !== undefined) {
+						if (resource.resourceName !== undefined && !this.openedSources[resource.resourceName]) {
+							chrome.devtools.panels.openResource(resource.resourceName, null, function() {
+								this.openedSources[resource.resourceName] = true;
+								this.triggerEvent(update.event, {});
+							}.bind(this));
+						}else{
+							this.triggerEvent(update.event, {});
+						}
+					}
+					if (resource.resourceName !== undefined) {
+						delete resource.resourceName;
 					}
 				}
 			}.bind(this));
 		}.bind(this);
 
-		if (!this.openedSources[resource.url]) {
-			this.openedSources[resource.url] = true;
+		if (!this.openedSources[update.url]) {
 			chrome.devtools.panels.openResource(resource.url, null, function() {
 				// doesn't always work right away
+				this.openedSources[update.url] = true;
 				setTimeout(setContent, 100);
-			});
+			}.bind(this));
 		} else {
 			setContent();
 		}
@@ -364,8 +369,12 @@
 			return;
 		}else if (updatedResource.action == 'error') {
 
-			this.updateResource(updatedResource);
-			this.error(updatedResource.url, updatedResource.message);
+			if (this.devResources[updatedResource.url] !== undefined) {
+				var resource = this.devResources[updatedResource.url];
+				this.updateResource(resource, updatedResource);
+			}
+
+			this.error(updatedResource.url, updatedResource);
 
 		}else if (updatedResource.action == 'sync') {
 
@@ -373,6 +382,7 @@
 
 			if (this.devResources[updatedResource.url] !== undefined) {
 				var resource = this.devResources[updatedResource.url];
+				resource.resourceName = updatedResource.url;
 			}
 
 		}else if (updatedResource.action == 'update') {
@@ -392,6 +402,11 @@
 				var resource = this.devResources[updatedResource.url];
 			}
 
+
+			if (updatedResource.resourceName !== undefined) {
+				resource.resourceName = updatedResource.resourceName;
+			}
+
 		}
 
 		if (resource === undefined) {
@@ -407,10 +422,6 @@
 			resource.sync = updatedResource.sync;
 		}
 
-
-		if (updatedResource.resourceName !== undefined) {
-			resource.resourceName = updatedResource.resourceName;
-		}
 
 		if (updatedResource.part !== undefined) {
 
@@ -429,7 +440,8 @@
 				delete resource.part;
 			}
 
-			this.updateResource(resource);
+
+			this.updateResource(resource,updatedResource);
 		}
 
 	};
@@ -463,7 +475,6 @@
 	}
 
 	Session.prototype.error = function(title, data) {
-		data.message = "[error] " + data.message;
 		var dataB64 = window.btoa(unescape(encodeURIComponent(JSON.stringify(data))));
 		var data = decodeURIComponent(escape(window.atob(dataB64)));
 		var script = '(function() {' +

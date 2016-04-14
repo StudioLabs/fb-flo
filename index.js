@@ -51,7 +51,6 @@ function Live(options) {
 	this.url = [];
 	this.src = [];
 	this.tmp = [];
-	this.sync = [];
 
 	var MemoryFileSystem = require("memory-fs");
 	process.live = [];
@@ -228,9 +227,6 @@ Live.prototype.watch = function(options) {
 
 Live.prototype.onFileChange = function(filepath) {
 	if(this.file[filepath] !== undefined){
-		if(this.file[filepath].content !== undefined){
-			delete this.file[filepath].content;
-		}
 		return this.file[filepath].plugin.resolve(this,this.file[filepath]);
 	}else{
 		var fileUrl = filepath.replace(this.options.devtools.directory + '/', '');
@@ -256,141 +252,6 @@ Live.prototype.resolve = function(filepath, fileUrl) {
 };
 
 
-/**
- * send error to the client
- *
- * @param {string} filepath
- * @private
- */
-
-Live.prototype.error = function(error) {
-	this.log('error', error);
-
-	if(error.codeFrame !== undefined){
-		error.message = error.message.replace(': ' , ':\n') + '\n'+error.codeFrame;
-	}
-
-	if(error.filename !== undefined){
-		error.file = error.filename;
-	}
-
-	if(error.loc !== undefined){
-		error.line = error.loc.line;
-	}
-
-	if(error.message !== undefined){
-
-		var errorMessage = {
-			action: 'error',
-			message :   chalk.stripColor(error.message)
-		};
-
-		if(error.file !== undefined ){
-
-			var filepath = path.resolve(error.file);
-			if(this.file[filepath] !== undefined ){
-
-			 	var file = this.file[filepath];
-				var url  = this.getClientHostname()+'/'+file.src;
-
-				var fileLine =  error.message.split('\n')[0];
-				if(fileLine.indexOf(file.src)>=0){
-					errorMessage.message = error.message.replace(fileLine, url);
-				}else{
-					errorMessage.message = url+'\n'+error.message;
-				}
-
-				errorMessage.url = url;
-				errorMessage.content = fs.readFileSync(content);
-			}
-		}
-
-		this.broadcast(errorMessage);
-	}
-};
-
-
-/**
- * Get Client hostname.
- *
- * @public
- */
-
-Live.prototype.getClientHostname = function() {
-
-	if(this.options.devtools.hostname !== undefined) return this.options.devtools.hostname;
-
-	var hostname = this.ws.hostname;
-	try {
-
-		if (hostname[hostname.length - 1] == '/') {
-			hostname = hostname.substr(0, hostname.length - 1);
-		}
-
-	}catch (err) {
-		this.onError(err);
-	}
-
-	return hostname;
-};
-
-/**
- * Get Client page url.
- *
- * @public
- */
-
-Live.prototype.getClientPageUrl = function() {
-	return this.ws.pageUrl;
-};
-
-
-/**
- * Register a File.
- *
- * @public
- */
-Live.prototype.registerFile = function(file) {
-	this.url[file.url] = file;
-	this.src[file.src] = file;
-	this.file[file.path] = file;
-
-	if(file.tmp !== undefined){
-		this.tmp[file.tmp] = file;
-	}
-};
-/**
- * Stop watching
- *
- * @private
- */
-
-Live.prototype.stopWatching = function(cb) {
-	var self = this;
-	this.watcher.forEach(function(watch, folder) {
-		watch.close();
-		self.debug("stop watching ", folder);
-	}.bind(this));
-	if (cb !== undefined) {
-		cb();
-	}
-};
-
-/**
- * Brodcast a message.
- *
- * @param {object} message
- * @private
- */
-
-Live.prototype.broadcast = function(message) {
-	if(this.ws.hostname != null){
-		this.debug('broadcast', message);
-		this.ws.broadcast(message);
-	}else{
-		this.debug('broadcast canceled, no connection with a client');
-	}
-};
 
 /**
  * Handles message
@@ -419,12 +280,12 @@ Live.prototype.onMessage = function(message) {
  */
 
 Live.prototype.onUpdateAction = function(message) {
-	var url = message.url.replace(this.getClientHostname() + '/', '');
+	var url = message.src.replace(this.getClientHostname() + '/', '');
 	this.debug('update',url);
-	if (this.sync[url] !== undefined) {
-		var file = this.sync[url];
-		file.content = message.content;
-		fs.writeFileSync(file.path, message.content);
+	this.debug(this.url[url]);
+	if (this.url[url] !== undefined) {
+		this.url[url].content = message.content;
+		fs.writeFileSync(this.url[url].path, message.content);
 	}
 };
 
@@ -436,11 +297,10 @@ Live.prototype.onUpdateAction = function(message) {
  */
 
 Live.prototype.onSyncAction = function(message) {
-	var originalFileContent = '';
-	var url = message.url.replace(this.getClientHostname() + '/', '');
+	var url = message.src.replace(this.getClientHostname() + '/', '');
 	this.debug('sync',url);
-	if (this.sync[url] !== undefined) {
-		var file = this.sync[url];
+	if (this.url[url] !== undefined) {
+		var file = this.url[url];
 		if (file.sync !== undefined) {
 			originalFileContent = utf8.decode(file.sync);
 			delete file.sync;
@@ -453,7 +313,6 @@ Live.prototype.onSyncAction = function(message) {
 			url: url,
 			content: originalFileContent
 		};
-		record.resourceName = message.url;
 
 		this.broadcast(record);
 	}
@@ -514,8 +373,162 @@ Live.prototype.open = function(url, name) {
  * @private
  */
 
+/**
+ * send error to the client
+ *
+ * @param {string} filepath
+ * @private
+ */
+
+Live.prototype.error = function(error) {
+	this.log('error', error);
+
+	if(error.codeFrame !== undefined){
+		error.message = error.message.replace(': ' , ':\n') + '\n'+error.codeFrame;
+	}
+
+	if(error.filename !== undefined){
+		error.file = error.filename;
+	}
+
+	if(error.loc !== undefined){
+		error.line = error.loc.line;
+	}
+
+	if(error.message !== undefined){
+
+		var errorMessage = {
+			action: 'error',
+			message :  error.message
+		};
+
+		if(error.file !== undefined ){
+
+			var filepath = path.resolve(error.file);
+			if(this.file[filepath] !== undefined ){
+
+			 	var file = this.file[filepath];
+				var url  = this.getClientHostname()+'/'+file.src;
+
+				var fileLine =  error.message.split('\n')[0];
+
+				if(fileLine.indexOf(file.src)>=0){
+					errorMessage.message = error.message.replace(fileLine, url);
+				}else if(fileLine.indexOf(file.url)>=0){
+					errorMessage.message = error.message.replace(fileLine, url);
+				}else{
+					errorMessage.message = url+'\n'+error.message;
+				}
+
+
+				if(error.line!= undefined && error.line > 0){
+					errorMessage.message = errorMessage.message.replace(url, url+':'+error.line);
+				}
+
+				var fileName = path.basename(file.path);
+				errorMessage.message =    errorMessage.message.replace(file.path, fileName);
+
+
+				errorMessage.url = url;
+
+				errorMessage.content = fs.readFileSync(file.path).toString();
+			}
+		}
+
+		errorMessage.message =    chalk.stripColor(errorMessage.message);
+
+		this.broadcast(errorMessage);
+	}
+};
+
+
+/**
+ * Get Client hostname.
+ *
+ * @public
+ */
+
+Live.prototype.getClientHostname = function() {
+
+	if(this.options.devtools.hostname !== undefined) return this.options.devtools.hostname;
+
+	var hostname = this.ws.hostname;
+	try {
+
+		if (hostname[hostname.length - 1] == '/') {
+			hostname = hostname.substr(0, hostname.length - 1);
+		}
+
+	}catch (err) {
+		this.onError(err);
+	}
+
+	return hostname;
+};
+
+/**
+ * Get Client page url.
+ *
+ * @public
+ */
+
+Live.prototype.getClientPageUrl = function() {
+	return this.ws.pageUrl;
+};
+
+
+/**
+ * Register a File.
+ *
+ * @public
+ */
+Live.prototype.registerFile = function(file) {
+
+	this.url[file.url] = file;
+	this.src[file.src] = file;
+	this.file[file.path] = file;
+
+	if(file.tmp !== undefined){
+		this.tmp[file.tmp] = file;
+	}
+};
+/**
+ * Stop watching
+ *
+ * @private
+ */
+
+Live.prototype.stopWatching = function(cb) {
+	var self = this;
+	this.watcher.forEach(function(watch, folder) {
+		watch.close();
+		self.debug("stop watching ", folder);
+	}.bind(this));
+	if (cb !== undefined) {
+		cb();
+	}
+};
+
+/**
+ * Brodcast a message.
+ *
+ * @param {object} message
+ * @private
+ */
+
+Live.prototype.broadcast = function(message) {
+	if(this.ws.hostname != null){
+		this.debug('broadcast', message);
+		this.ws.broadcast(message);
+	}else{
+		this.debug('broadcast canceled, no connection with a client');
+	}
+};
+
+
 function logger(verbose, moduleName) {
 	var slice = [].slice;
+
 	return function() {
 		var args = slice.call(arguments);
 		args[0] = '[' + moduleName + '] ' + args[0];

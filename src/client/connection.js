@@ -25,7 +25,7 @@
 	 */
 
 	var DELAY = 500;
-	var RETRIES = 5;
+	var RETRIES = 20;
 	var NOP = function () {};
 
 	/**
@@ -74,6 +74,7 @@
 
 		this.callbacks.connecting();
 		this.logger.log('Connecting to', url);
+		console.log('Connecting to', url);
 
 		ws.onopen = this.openHandler;
 		ws.onmessage = this.messageHandler;
@@ -166,6 +167,8 @@
 	 */
 
 	Connection.prototype.connected = function() {
+				console.log('Connected');
+
 		return this.ws && this.ws.readyState === this.ws.OPEN;
 	};
 
@@ -178,6 +181,7 @@
 
 	Connection.prototype.messageHandler = function(evt) {
 		var msg = JSON.parse(evt.data);
+		console.log('received : ', msg);
 		this.callbacks.message(msg);
 	};
 
@@ -211,6 +215,8 @@
 
 	Connection.prototype.sendMessage = function(message,callback) {
 		this.ws.send(this.utf8ToB64(JSON.stringify(message)));
+		console.log('send : ',message);
+
 		if(callback){
 			callback();
 		}
