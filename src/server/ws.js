@@ -143,16 +143,6 @@ WSServer.prototype.broadcast = function(msg) {
 		if (msg.url[0] == '/') {
 			msg.url = msg.url.substr(1);
 		}
-
-		var hostname = this.hostname;
-		if (hostname != null){
-
-			if( hostname[hostname.length - 1] == '/') {
-				hostname = hostname.substr(0, hostname.length - 1);
-			}
-
-			msg.url = hostname + '/' + msg.url;
-		}
 	}
 
 	this.sendMessage(msg);

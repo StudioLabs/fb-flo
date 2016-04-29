@@ -133,6 +133,11 @@
 			this.session.setForceReloading(this.site.forceReloading);
 			this.saveConfig();
 		});
+
+		this.listenToPanel('get_resources', function(e) {
+			this.session.getResources();
+		});
+
 		this.listenToPanel('retry', this.startNewSession);
 		this.listenToPanel('enable_for_host', this.enableForHost);
 		this.panelEventBuffer.forEach(function(event) {

@@ -159,10 +159,10 @@
     if (value == 'enable') {
       el.classList.remove('disable');
       el.classList.add('enable');
-    }else{ 
+    }else{
       el.classList.remove('enable');
       el.classList.add('disable');
-    }  
+    }
     triggerEvent('save_force_reload', value);
   }
 
@@ -211,6 +211,10 @@
 
   $('.action.enable').onclick = function() {
     triggerEvent('enable_for_host');
+  };
+
+	$('#resources').onclick = function() {
+    triggerEvent('get_resources');
   };
 
   listenToEvent('load', function(e) {

@@ -61,8 +61,7 @@ function Live(options) {
 		process.fs.mkdirpSync = mkdirp.sync;
 	}
 
-	this.log = logger(this.options.verbose, 'Live');
-	this.debug = logger(this.options.debug, 'Live');
+	this.debug = logger(!this.options.debug, 'Live');
 
 	this.rootDir = path.resolve( this.options.root || process.cwd()) + '/';
 
@@ -172,9 +171,17 @@ Live.prototype.devtools = function(options) {
 
 	this.options.devtools = options;
 
+	var through = require('through');
+
 	if (options.plugin !== undefined) {
 		this.initPlugins(options.plugin);
 	}
+
+	this.stream = through(function() {
+	    this.pause();
+	  });
+
+	return this.stream;
 
 };
 
@@ -184,10 +191,25 @@ Live.prototype.devtools = function(options) {
  * @private
  */
 Live.prototype.initPlugins = function(plugins) {
-	for (var config in plugins) {
-		plugins[config].init(this);
-	}
+
+	this.streams = [];
+
+    plugins.map(function (plugin, i) {
+    	this.streams[i] = plugin.stream = i;
+		plugin.init(this);
+    }.bind(this));
 };
+
+
+Live.prototype.streamFinished = function(plugin) {
+
+	this.streams = this.streams.filter(function(e){return e!==plugin.stream});
+
+	if(this.streams.length == 0){
+		this.stream.emit('end');
+	}
+
+}
 
 
 /**
@@ -244,11 +266,16 @@ Live.prototype.onFileChange = function(filepath) {
 
 Live.prototype.resolve = function(filepath, fileUrl) {
 	this.log('resolve', filepath);
-	this.broadcast({
-		action: 'update',
-		url: fileUrl,
-		content: fs.readFileSync(filepath).toString()
-	});
+
+	if(fs.existsSync(filepath)){
+		this.broadcast({
+			action: 'update',
+			url: fileUrl,
+			content: fs.readFileSync(filepath).toString()
+		});
+	}
+
+
 };
 
 
@@ -280,7 +307,7 @@ Live.prototype.onMessage = function(message) {
  */
 
 Live.prototype.onUpdateAction = function(message) {
-	var url = message.src.replace(this.getClientHostname() + '/', '');
+	var url = message.src;
 	this.debug('update',url);
 	this.debug(this.url[url]);
 
@@ -305,7 +332,7 @@ Live.prototype.onUpdateAction = function(message) {
  */
 
 Live.prototype.onSyncAction = function(message) {
-	var url = message.src.replace(this.getClientHostname() + '/', '');
+	var url = message.src;
 	this.debug('sync',url);
 
 	var file;
@@ -314,10 +341,9 @@ Live.prototype.onSyncAction = function(message) {
 	}else if (this.src[url] !== undefined) {
 		file = this.src[url];
 	}
-
 	if (file !== undefined) {
 		if (file.sync !== undefined) {
-			originalFileContent = utf8.decode(file.sync);
+			originalFileContent = file.sync;
 			delete file.sync;
 		}else{
 			var originalFileContent = fs.readFileSync(file.path, 'utf8');
@@ -445,6 +471,7 @@ Live.prototype.error = function(error) {
 
 
 				errorMessage.url = url;
+				errorMessage.src = file.src;
 
 				errorMessage.content = fs.readFileSync(file.path).toString();
 			}
@@ -499,13 +526,18 @@ Live.prototype.getClientPageUrl = function() {
  */
 Live.prototype.registerFile = function(file) {
 
+	var alreadyPresent = (this.file[file.path] !== undefined);
+
 	this.url[file.url] = file;
 	this.src[file.src] = file;
 	this.file[file.path] = file;
-
 	if(file.tmp !== undefined){
 		this.tmp[file.tmp] = file;
 	}
+
+	return alreadyPresent;
+
+
 };
 /**
  * Stop watching
