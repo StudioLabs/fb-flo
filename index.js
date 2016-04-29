@@ -61,6 +61,7 @@ function Live(options) {
 		process.fs.mkdirpSync = mkdirp.sync;
 	}
 
+	this.log = logger(!this.options.verbose, 'Live');
 	this.debug = logger(!this.options.debug, 'Live');
 
 	this.rootDir = path.resolve( this.options.root || process.cwd()) + '/';
