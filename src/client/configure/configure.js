@@ -213,9 +213,9 @@
     triggerEvent('enable_for_host');
   };
 
-	$('#resources').onclick = function() {
-    triggerEvent('get_resources');
-  };
+	// $('#resources').onclick = function() {
+ //    triggerEvent('get_resources');
+ //  };
 
   listenToEvent('load', function(e) {
     load(e.data);

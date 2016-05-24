@@ -38,7 +38,7 @@ function Live(options) {
 	this.options = {};
 
 	var options =  _.assign({
-		verbose: false,
+		verbose: true,
 		debug: false,
 		memory : true
 	}, options);
@@ -61,8 +61,8 @@ function Live(options) {
 		process.fs.mkdirpSync = mkdirp.sync;
 	}
 
-	this.log = logger(!this.options.verbose, 'Live');
-	this.debug = logger(!this.options.debug, 'Live');
+	this.log = logger(this.options.verbose, 'Live');
+	this.debug = logger(this.options.debug, 'Live');
 
 	this.rootDir = path.resolve( this.options.root || process.cwd()) + '/';
 
@@ -210,6 +210,7 @@ Live.prototype.streamFinished = function(plugin) {
 		this.stream.emit('end');
 	}
 
+
 }
 
 
@@ -249,8 +250,10 @@ Live.prototype.watch = function(options) {
  */
 
 Live.prototype.onFileChange = function(filepath) {
-	if(this.file[filepath] !== undefined){
-		return this.file[filepath].plugin.resolve(this,this.file[filepath]);
+	if(this.file[filepath] !== undefined ){
+		if(this.file[filepath].plugin !== undefined ){
+			return this.file[filepath].plugin.resolve(this,this.file[filepath]);
+		}
 	}else{
 		var fileUrl = filepath.replace(this.options.devtools.directory + '/', '');
 
@@ -266,9 +269,10 @@ Live.prototype.onFileChange = function(filepath) {
  */
 
 Live.prototype.resolve = function(filepath, fileUrl) {
-	this.log('resolve', filepath);
 
 	if(fs.existsSync(filepath)){
+		this.log('update', filepath);
+
 		this.broadcast({
 			action: 'update',
 			url: fileUrl,
@@ -289,7 +293,7 @@ Live.prototype.resolve = function(filepath, fileUrl) {
  */
 
 Live.prototype.onMessage = function(message) {
-	this.log('message', message);
+	this.debug('message', message);
 
 	if (message.action == 'update') {
 		this.onUpdateAction(message);
@@ -310,7 +314,6 @@ Live.prototype.onMessage = function(message) {
 Live.prototype.onUpdateAction = function(message) {
 	var url = message.src;
 	this.debug('update',url);
-	this.debug(this.url[url]);
 
 	var file;
 	if (this.url[url] !== undefined) {
@@ -322,6 +325,14 @@ Live.prototype.onUpdateAction = function(message) {
 	if (file !== undefined) {
 		file.content = message.content;
 		fs.writeFileSync(file.path, message.content);
+	}else {
+		var filepath = this.options.devtools.directory + '/' + url;
+		 if(fs.existsSync(filepath)){
+			var content = fs.readFileSync(filepath).toString();
+			if( content != message.content ){
+				fs.writeFileSync(filepath, message.content);
+			}
+		}
 	}
 };
 
