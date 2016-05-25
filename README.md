@@ -12,7 +12,7 @@ DevtoolsLive is made up of a server and client component. This will guide throug
 
 ### 1. Install Chrome Extension
 
-Grab the [https://chrome.google.com/webstore/detail/devtools-live/mibfmhaegkllojggdbddpfdimhmbhkcn?hl](Devtools Live extension). This will add a new tab in your Chrome DevTools called 'Live'.
+Grab the [Devtools Live extension](https://chrome.google.com/webstore/detail/devtools-live/mibfmhaegkllojggdbddpfdimhmbhkcn?hl). This will add a new tab in your Chrome DevTools called 'Live'.
 
 or 
 
