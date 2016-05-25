@@ -1,6 +1,6 @@
 {
   "name": "devtools-live",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Modify running web apps without reloading",
   "repository": {
     "type": "git",
