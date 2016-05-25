@@ -20,6 +20,8 @@ Visit chrome://extensions in your browser (or open up the Chrome menu by clickin
 
 Ensure that the Developer mode checkbox in the top right-hand corner is checked.
 
+![786508223546859693](https://cloud.githubusercontent.com/assets/231490/15523493/120b291c-221b-11e6-9a84-3fa41d0690a9.png)
+
 Click Load unpacked extension… to pop up a file-selection dialog.
 
 Navigate to the devtools Live directory  and go to src.
@@ -27,7 +29,7 @@ Navigate to the devtools Live directory  and go to src.
 Select the Client folder.
 
 
-### 2. Configure DevtoolsLive server
+### 2. Configure Devtools Live Server
 
 ```
 $ npm install devtools-live
@@ -65,9 +67,14 @@ $ node live.js
 
 ### 4. Configure Devtools Live
 
-Go to the Live extension in  chrome devtools. Go to configuration and add your server configuration.
+Go to the Live extension in  chrome devtools. Click on Activate.
+Devtools Live will be connected automatically.
 
-Devtools Live will normally be connected automatically.
+![mai-25-2016 01-58-36](https://cloud.githubusercontent.com/assets/231490/15523656/4220444c-221c-11e6-87d4-d636949247ad.gif)
+
+
+If there is an issue, go to configuration and add a new  server configuration.
+
 
 
 ### 5. Edit your code 
