@@ -70,8 +70,7 @@ $ node live.js
 Go to the Live extension in  chrome devtools. Click on Activate.
 Devtools Live will be connected automatically.
 
-![mai-25-2016 01-58-36](https://cloud.githubusercontent.com/assets/231490/15523656/4220444c-221c-11e6-87d4-d636949247ad.gif)
-
+![mai-25-2016 02-01-54](https://cloud.githubusercontent.com/assets/231490/15523725/b73c534c-221c-11e6-9a2c-3e147f8af492.gif)
 
 If there is an issue, go to configuration and add a new  server configuration.
 
