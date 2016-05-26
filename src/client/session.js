@@ -253,7 +253,7 @@
 						var sync = resource.sync;
 						var record = {
 							action: 'sync',
-							src: sync
+							src: sync.replace(this.url, '')
 						};
 						this.conn.sendMessage(record);
 						delete resource.sync;
