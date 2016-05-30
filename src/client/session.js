@@ -341,7 +341,7 @@
 				action: 'baseUrl',
 				url: this.url
 			});
-		}else if (this.forceReloading === true) {
+		}else if (this.forceReloading === true || message.action == 'reload') {
 			this.reload();
 			return;
 		}else if (message.action == 'urls') {

@@ -415,7 +415,14 @@ Live.prototype.stop = function() {
 */
 
 Live.prototype.open = function(url, name) {
-	require("opn")(url, name || null);
+
+	if(this.ws !== undefined  && this.ws.connected == true){
+		this.broadcast({
+			action :'reload'
+		});
+	}else{
+		require("opn")(url, name || null);
+	}
 };
 
 /**
@@ -434,7 +441,11 @@ Live.prototype.open = function(url, name) {
  */
 
 Live.prototype.error = function(error) {
-	this.log('error', error);
+	this.debug('error', error);
+
+	if(error.annotated !== undefined){
+		error.message = error.annotated;
+	}
 
 	if(error.codeFrame !== undefined){
 		error.message = error.message.replace(': ' , ':\n') + '\n'+error.codeFrame;
@@ -492,6 +503,10 @@ Live.prototype.error = function(error) {
 		errorMessage.message =    chalk.stripColor(errorMessage.message);
 
 		this.broadcast(errorMessage);
+
+		console.log('[error]');
+		console.log(errorMessage.message);
+
 	}
 };
 

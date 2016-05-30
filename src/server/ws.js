@@ -32,7 +32,7 @@ function WSServer(options) {
 	this.message = options.message || function() {};
 	this.parent = options.parent;
 	this.port = options.port || 8888;
-
+	this.connected = false;
 	this.hostname = null;
 	this.pageUrl = null;
 	this.httpServer = http.createServer(function(req, res) {
@@ -59,7 +59,7 @@ WSServer.prototype.onClose = function() {
 
 WSServer.prototype.onReady = function() {
 	this.parent.emit('ready');
-	this.log('websocket listening port ' + this.options.port);
+	this.debug('websocket listening port ' + this.options.port);
 };
 /**
  * Start Websocket Server.
@@ -110,6 +110,8 @@ WSServer.prototype.onMessage = function(message) {
 		var url = data.url.split('/');
 		this.hostname = url.slice(0, 3).join('/') + '/';
 		this.pageUrl = url.slice(3).join('/');
+		this.connected = true;
+		console.log('[connected]');
 		this.debug('Client Url :', this.pageUrl);
 		this.debug('Client Hostname :', this.hostname);
 	}else {
@@ -126,6 +128,8 @@ WSServer.prototype.onMessage = function(message) {
 
 WSServer.prototype.onClose = function(ws) {
 	this.log('Client disconnected');
+	this.connected = false;
+
 	if (this.sockets) {
 		this.sockets.splice(this.sockets.indexOf(ws), 1);
 	}
