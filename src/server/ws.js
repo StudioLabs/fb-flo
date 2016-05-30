@@ -82,7 +82,7 @@ WSServer.prototype.start = function() {
  */
 
 WSServer.prototype.onRequest = function(req) {
-	this.log('Client connected', req.socket.address());
+	this.debug('Client connected', req.socket.address());
 	var ws = req.accept();
 	this.sockets.push(ws);
 	ws.on('message', this.onMessage.bind(this));
@@ -103,7 +103,7 @@ WSServer.prototype.onRequest = function(req) {
 WSServer.prototype.onMessage = function(message) {
 	var buffer = new Buffer(message.utf8Data, 'base64').toString(message.type);
 	var data  = JSON.parse(buffer);
-	this.log('Message from the client :', data.action, data.url);
+	this.debug('Message from the client :', data);
 
 	//  this.log('Message from the client :', data);
 	if (data.action == 'baseUrl') {
@@ -111,7 +111,6 @@ WSServer.prototype.onMessage = function(message) {
 		this.hostname = url.slice(0, 3).join('/') + '/';
 		this.pageUrl = url.slice(3).join('/');
 		this.connected = true;
-		console.log('[connected]');
 		this.debug('Client Url :', this.pageUrl);
 		this.debug('Client Hostname :', this.hostname);
 	}else {

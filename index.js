@@ -442,6 +442,8 @@ Live.prototype.open = function(url, name) {
 
 Live.prototype.error = function(error) {
 	this.debug('error', error);
+			console.log(error);
+
 
 	if(error.annotated !== undefined){
 		error.message = error.annotated;
@@ -505,6 +507,7 @@ Live.prototype.error = function(error) {
 		this.broadcast(errorMessage);
 
 		console.log('[error]');
+
 		console.log(errorMessage.message);
 
 	}
