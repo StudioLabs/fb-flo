@@ -55,7 +55,6 @@
 	   */
 
 	Session.prototype.start = function() {
-		this.logger.log('Starting DevtoolsLive for host', this.host);
 		this.getLocation(this.setLocation);
 	};
 
@@ -221,7 +220,6 @@
 	   */
 
 	Session.prototype.started = function() {
-		this.logger.log('Started');
 		this.status('started');
 
 		chrome.devtools.network.onNavigated.addListener(this.restart);

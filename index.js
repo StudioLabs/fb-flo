@@ -425,6 +425,21 @@ Live.prototype.open = function(url, name) {
 	}
 };
 
+
+/**
+* Wrapper for open module - for easier stubbin'
+* @param url
+* @param name
+*/
+
+Live.prototype.reload = function() {
+	if(this.ws !== undefined  && this.ws.connected == true){
+		this.broadcast({
+			action :'reload'
+		});
+	}
+};
+
 /**
  * Creates a logger for a given module.
  *
@@ -442,8 +457,6 @@ Live.prototype.open = function(url, name) {
 
 Live.prototype.error = function(error) {
 	this.debug('error', error);
-			console.log(error);
-
 
 	if(error.annotated !== undefined){
 		error.message = error.annotated;

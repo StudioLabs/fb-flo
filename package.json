@@ -1,6 +1,6 @@
 {
   "name": "devtools-live",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Modify running web apps without reloading",
   "repository": {
     "type": "git",
@@ -11,7 +11,7 @@
   "dependencies": {
     "chalk": "^1.1.1",
     "connect": "^3.4.0",
-    "devtools-live-middleware": "0.0.2",
+    "devtools-live-middleware": "0.0.3",
     "event-stream": "^3.3.2",
     "gulp-util": "^3.0.6",
     "lodash": "^3.9.3",
