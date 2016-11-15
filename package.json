@@ -1,7 +1,7 @@
 {
   "name": "devtools-live",
-  "version": "0.1.9",
-  "description": "Modify running web apps without reloading",
+  "version": "0.2.0",
+  "description": "Edit your files in devtools console without reloading your browser",
   "repository": {
     "type": "git",
     "url": "git@github.com:StudioLabs/devtools-live.git"
@@ -26,6 +26,19 @@
     "utf8": "^2.1.0",
     "websocket": "^1.0.21"
   },
-  "bin": "./bin/devtools-live",
-  "devDependencies": {}
+  "keywords": [
+    "live",
+    "edit",
+    "hot",
+    "dev",
+    "tools",
+    "console",
+    "reload",
+    "browser",
+    "devtools",
+    "live-reload",
+    "live-edit",
+    "server"
+  ],
+  "bin": "./bin/devtools-live"
 }

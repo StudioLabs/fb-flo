@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+   <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, maximum-scale=1"/>
+   <meta name="description" content="Kumullus Video Experience"/>
+   <meta name="keywords" content=""/>
+   <meta name="author" content="Kumullus"/>
+   <title>Nextdoor</title>
+   <link rel="shortcut icon" href="favicon.ico">
+   <link rel="stylesheet" type="text/css" href="assets/kmlPlayer/kmlPlayer.min.css">
+   <link rel="stylesheet" type="text/css" href="assets/css/main.css">
+   <link rel="stylesheet" type="text/css" href="assets/css/slides.css">
+   <link rel="stylesheet" type="text/css" href="assets/font/museo/museo.css">
+   <!--[if lte IE 9]>
+       <script src="assets/kmlPlayer/ie8/kmlPlayer.min.js"></script>
+   <![endif]-->
+</head>
+<body>
+   <video class="mainVideo videoWrapper video-js hidden" id="mainVideo">
+       <source type="video/mp4" src="http://client.kumullus.com/nextdoor/assets/media/main.mp4"></source>
+       <p class="vjs-no-js">
+           Pour voir cette vidéo, merci d'activer JavaScript et d'envisager la mise à niveau vers un navigateur Web qui <a href='' target='_blank'>supporte la vidéo HTML5</a>
+       </p>
+   </video>
+   <div style='display:none;'>
+      <div id='contentHolder' class="popups">
+        <div class="overlay anim-generic"></div>
+        <div class="popup video">
+            <video class="videoWrapper box" id="popupVideo" controls>
+               <source type="video/mp4" src="http://client.kumullus.com/nextdoor/assets/media/1_int.mp4"></source>
+            </video>
+            <div class="closeBtn">
+              <img src="assets/svg/close.svg"/>
+            </div>
+            <div class="title">
+              <span class="bg" id="popupVideoTitle"></span>
+            </div>
+        </div>
+        <div class="popup slideshow">
+            <div id="modalSlides" class="slidesWrapper">
+                <div class="slider" id="slider_1">
+                    <div class="slider-item current"><img src="assets/media/slides/4_1.jpg" alt="Un blog qui vous présente tous les sujets #pourTravaillerAutrement" rel="0"></div>
+                    <div class="slider-item"><img src="assets/media/slides/4_2.jpg" alt="Un blog qui traite de sujets de fond sur la mutation du travail passé, présente et future #pourTravaillerAutrement" rel="1"></div>
+                    <div class="slider-item"><img src="assets/media/slides/4_3.jpg" alt="Un blog qui vous donne des trucs et astuces #pourTravaillerAutrement" rel="2"></div>
+                    <div class="slider-item"><img src="assets/media/slides/4_4.jpg" alt="Un blog qui vous ouvre les yeux et l’esprit #pourTravaillerAutrement" rel="3"></div>
+                    <div class="slider-item"><img src="assets/media/slides/4_5.jpg" alt="Un blog qui vous présente ceux qui travaillent déjà autrement !" rel="4"></div>
+                    <div class="slider-item"><img src="assets/media/slides/4_6.jpg" alt="Un blog qui vous invite à des événements #pourTravaillerAutrement" rel="5"></div>
+                    <a class="slider-left-handle" href="#"></a>
+                    <a class="slider-right-handle" href="#"></a>
+                </div>
+                <div class="slider-bullets" id="slider_1_bullets">
+                  <div class="slider-bullet active"></div>
+                  <div class="slider-bullet"></div>
+                  <div class="slider-bullet"></div>
+                  <div class="slider-bullet"></div>
+                  <div class="slider-bullet"></div>
+                  <div class="slider-bullet"></div>
+                </div>
+                <div class="slider" id="slider_2">
+                    <div class="slider-item current"><img src="assets/media/slides/5_it.png" alt=""></div>
+                    <a class="slider-left-handle" href="#"></a>
+                    <a class="slider-right-handle" href="#"></a>
+                </div>
+                <div class="slider-caption">
+                  <span id="slider_caption"></span>
+                </div>
+            </div>
+            <div class="closeBtn">
+              <img src="assets/svg/close.svg"/>
+            </div>
+            <div class="title">
+              <span class="bg" id="slideTitle"></span>
+            </div>
+        </div>
+        <div class="popup quiz">
+            <div class="closeBtn">
+              <img src="assets/svg/close.svg"/>
+            </div>
+            <div class="title">
+              <span class="bg" id="popupQuizTitle"></span>
+            </div>
+            <div class='quizzController' id='quizzController'>
+              <h1 id='quizQuestion'></h1>
+              <ul id='quizAnswers'>
+                <li id='qA_0'>
+                  <span class="answer"></span>
+                  <span class="bullet">
+                    <img class='circle' src="assets/svg/circle.svg"/>
+                    <img class='yes' src="assets/svg/good.svg"/>
+                    <img class='no' src="assets/svg/bad.svg"/>
+                  </span>
+                </li>
+                <li id='qA_1'>
+                  <span class="answer"></span>
+                  <span class="bullet">
+                    <img class='circle' src="assets/svg/circle.svg"/>
+                    <img class='yes' src="assets/svg/good.svg"/>
+                    <img class='no' src="assets/svg/bad.svg"/>
+                  </span>
+                </li>
+                <li id='qA_2'>
+                  <span class="answer"></span>
+                  <span class="bullet">
+                    <img class='circle' src="assets/svg/circle.svg"/>
+                    <img class='yes' src="assets/svg/good.svg"/>
+                    <img class='no' src="assets/svg/bad.svg"/>
+                  </span>
+                </li>
+              </ul>
+              <p  id='quizFeedback'>
+              </p>
+            </div>
+            <div id="popupQuizValidate" class='quizzValidate'>
+              <span>Valider</span>
+            </div>
+        </div>
+        <div class="popup contact">
+            <div class="closeBtn">
+              <img src="assets/svg/close.svg"/>
+            </div>
+            <div class="title">
+              <span class="bg">Nous Contacter</span>
+            </div>
+            <div class='contactController'>
+              <div class="leftContact">
+                <ul>
+                  <li>
+                    <a href="https://www.facebook.com/NextdoorPourTravaillerAutrement" target="_blank">
+                      <img style="margin-top: 15%;" src="assets/img/facebook.png"/>
+                    </a>
+                  </li>
+                  <li>
+                    <a href="https://twitter.com/Nextdoor_fr" target="_blank">
+                      <img style="margin-top: 15%;" src="assets/img/twitter.png"/>
+                    </a>
+                  </li>
+                  <li>
+                    <a href="http://nextdoor.fr/"  target="_blank">
+                      <img style="margin-top: 12%;" src="assets/img/play.png"/>
+                    </a>
+                  </li>
+                  <li>
+                    <a href="https://www.linkedin.com/company/nextdoor" target="_blank">
+                      <img style="width: 33%;margin-left: 33%;margin-top: 20%;" src="assets/img/linkedin.png"/>
+                    </a>
+                  </li>
+                  <li>
+                    <a href="https://blog.nextdoor.fr " target="_blank">
+                      <img style="margin-top: 7%; width: 45%; margin-left: 27.5%;" src="assets/img/blog.png"/>
+                    </a>
+                  </li>
+                </ul>
+              </div>
+              <form class="rightContact" id="contact_form">
+                <div class="horizontal">
+                  <input id="inputName" type="text" name="nom" placeholder="Nom"/>
+                  <input id="inputPreName" class="center" type="text" name="prenom" placeholder="Prenom"/>
+                  <input id="inputMail" class="right" type="text" name="email" placeholder="Email"/>
+                </div>
+                <textarea id="inputMessage" name="message" placeholder="Message"></textarea>
+                <input id="contact_submit" type="submit" value="Envoyer"/>
+              </form>
+            </div>
+            <a href="assets/media/plaquette_institutionnelle.pdf" download id="contactDownload" class='contactDownload'>
+              <span>Télécharger la plaquette</span>
+              <img src="assets/svg/icon_download.svg"/>
+            </a>
+        </div>
+      </div>
+      <div id='contentHotspots'>
+        <ul>
+          <li rel="interview" class="ht interview">
+            <img src="assets/svg/icon_interview.svg"/>
+            <span class="label">Interview</span>
+          </li>
+          <li rel="slideshow" class="ht slideshow">
+            <img src="assets/svg/icon_slideshow.svg"/>
+            <span class="label">Slideshow</span>
+          </li>
+          <li rel="video" class="ht video">
+            <img src="assets/svg/icon_videoplay.svg"/>
+            <span class="label">Presentation</span>
+          </li>
+          <li rel="quiz" class="ht quiz">
+            <img src="assets/svg/icon_quiz.svg"/>
+            <span class="label">Quiz</span>
+          </li>
+        </ul>
+      </div>
+   </div>
+   <script src="assets/js/slidesPlugin.js"></script>
+   <script src="assets/kmlPlayer/kmlPlayer.min.js"></script>
+   <script src="assets/js/nextdoor.js"></script>
+   <script src="assets/js/settings.js"></script>
+   <script src="assets/js/events.js"></script>
+   <script src="assets/js/hotspots.js"></script>
+   <script src="assets/js/nextchapter.js"></script>
+   <script src="assets/js/popup.js"></script>
+   <script src="assets/js/logo.js"></script>
+   <script src="assets/js/cuepoints.js"></script>
+   <script src="assets/js/video.js"></script>
+   <script src="assets/js/quiz.js"></script>
+   <script src="assets/js/contact.js"></script>
+   <script src="assets/js/slides.js"></script>
+   <script src="assets/js/main.js"></script>
+</body>
+</html>

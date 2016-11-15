@@ -1,0 +1,24 @@
+body{
+  background: black;
+  //background: blue;
+}
+
+#content{
+	width :100px;
+	height : 100px;
+	margin : 20px;
+	padding: 30px;
+	background: white;
+	//background: yellow;
+
+}
+
+h1 {
+	margin : 20px;
+	color: white;
+}
+
+button {
+	margin : 20px;
+	background: white;
+}

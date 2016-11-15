@@ -19,4 +19,5 @@ node_modules/
 # App Files
 # --------------------
 build/
+src/client.zip
 

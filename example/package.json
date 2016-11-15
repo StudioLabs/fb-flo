@@ -1,0 +1,14 @@
+{
+  "name": "exemple",
+  "version": "0.0.1",
+  "description": "Example for Devtools Live",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "Steed Monteiro <steed.monteiro@gmail.com>",
+  "license": "ISC",
+  "devDependencies": {
+    "devtools-live": "^0.1.9"
+  }
+}

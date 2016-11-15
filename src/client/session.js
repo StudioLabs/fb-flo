@@ -65,7 +65,10 @@
 	   */
 
 	Session.prototype.restart = function() {
-		this.logger.log('Restarting');
+		if (this.logger) {
+			this.logger.log('Restarting');
+		}
+
 		if (this.conn.connected()) {
 			// No need to reconnect. We just refetch the resources.
 			this.getResources(this.started.bind(this));
@@ -96,25 +99,24 @@
 		//
 		if (res.url.substr(0, 4) == 'http') {
 			var url = res.url.split('?')[0].replace(this.url, '');
-			if (url !== '') {
-				this.devResources[url] = res;
-				if(this.loader !== undefined){
 
-					this.loader.urls = this.loader.urls.filter(function(e){
-						return (url.indexOf(e) == -1)
+			this.devResources[url] = res;
+			if (this.loader !== undefined) {
+
+				this.loader.urls = this.loader.urls.filter(function(e) {
+					return (url.indexOf(e) == -1)
+				});
+
+				if (this.loader.urls.length == 0) {
+					var toSync = this.loader.toSync;
+					delete this.loader;
+				}
+
+				if (toSync !== undefined) {
+					this.conn.sendMessage({
+						action: 'sync',
+						src: toSync
 					});
-
-					if(this.loader.urls.length == 0){
-						var toSync = this.loader.toSync;
-						delete this.loader;
-					}
-
-					if(toSync !== undefined){
-						this.conn.sendMessage({
-							action: 'sync',
-							src: toSync
-						});
-					}
 				}
 			}
 		}
@@ -173,7 +175,7 @@
 				function(res) { this.registerResource(res); }.bind(this)
 			);
 
-			if(callback !== undefined){
+			if (callback !== undefined) {
 				this.console(' ', 'Ready !');
 
 				callback();
@@ -223,7 +225,7 @@
 		this.status('started');
 
 		chrome.devtools.network.onNavigated.addListener(this.restart);
-		chrome.devtools.inspectedWindow.onResourceContentCommitted.addListener(this.resourceUpdatedHandler.bind(this) );
+		chrome.devtools.inspectedWindow.onResourceContentCommitted.addListener(this.resourceUpdatedHandler.bind(this));
 	};
 
 	/**
@@ -235,12 +237,11 @@
 	   */
 	Session.prototype.resourceUpdatedHandler = function(updatedResource, content) {
 
-
-	 	if(updatedResource.registered == undefined){
+		if (updatedResource.registered == undefined) {
 
 			var src = updatedResource.url.split('?')[0].replace(this.url, '');
 
-			if (src !== '' && this.devResources[src] !== undefined) {
+			if (this.devResources[src] !== undefined  && content.indexOf('sourceMappingURL') == -1) {
 				var resource = this.devResources[src];
 
 				if (resource.resourceName !== undefined) {
@@ -248,19 +249,24 @@
 					this.triggerUpdateEvent(resource.resourceName);
 
 				}else if (resource.sync !== undefined) {
-						var sync = resource.sync;
-						var record = {
+					var sync = resource.sync;
+					var record = {
 							action: 'sync',
 							src: sync.replace(this.url, '')
 						};
-						this.conn.sendMessage(record);
-						delete resource.sync;
-				} else{
-					this.conn.sendMessage({
-						action: 'update',
-						src: src,
-						content: content
-					});
+					this.conn.sendMessage(record);
+					delete resource.sync;
+				} else {
+
+					if (src !== '') {
+						this.conn.sendMessage({
+							action: 'update',
+							src: src,
+							content: content
+						});
+					}else {
+						this.index();
+					}
 				}
 
 			}
@@ -269,9 +275,7 @@
 
 		}
 
-
 	};
-
 
 	/***
 	* Update browser resouce.
@@ -279,7 +283,7 @@
     */
 
 	 Session.prototype.updateResource = function(resource, update) {
-	 	console.log('updateResource',resource, update);
+		console.log('updateResource', resource, update);
 
 		var setContent = function() {
 			resource.setContent(update.content, true, function(status) {
@@ -295,15 +299,16 @@
 								this.openedSources[update.resourceName] = true;
 								this.triggerEvent(update.event, {});
 							}.bind(this));
-						}else{
+						}else {
 							this.triggerEvent(update.event, {});
 						}
 					}
+
 					if (resource.resourceName !== undefined) {
 						delete resource.resourceName;
 					}
 
-					if(resource.update !== undefined){
+					if (resource.update !== undefined) {
 						this.messageHandler(resource.update);
 						delete resource.update;
 					}
@@ -321,9 +326,7 @@
 			setContent();
 		}
 
-
 	};
-
 
 	/***
 	* Handler for messages from the server.
@@ -332,7 +335,6 @@
 
 	Session.prototype.messageHandler = function(message) {
 		console.log('messageHandler', message);
-
 
 		if (message.action == 'baseUrl' && this.conn && this.url) {
 			return this.conn.sendMessage({
@@ -343,7 +345,7 @@
 			this.reload();
 			return;
 		}else if (message.action == 'urls') {
-			if(message.next != undefined){
+			if (message.next != undefined) {
 				if (this.devResources[message.next.url] !== undefined) {
 					this.loader = this.devResources[message.next.url];
 					this.loader.toSync = message.next.url;
@@ -387,15 +389,13 @@
 				return;
 			}
 
-			if (message.url.indexOf('index.html') > 0) {
-				message.url = message.url.replace('index.html', '');
+			if (message.url.indexOf('index.html') >= 0) {
+				message.url = '';
 			}
 
 			if (this.devResources[message.url] !== undefined) {
 				var resource = this.devResources[message.url];
 			}
-
-
 
 		}
 
@@ -411,11 +411,9 @@
 			resource.resourceName = message.resourceName;
 		}
 
-
 		if (message.sync !== undefined) {
 			resource.sync = message.sync;
 		}
-
 
 		if (message.part !== undefined) {
 
@@ -434,8 +432,7 @@
 				delete resource.part;
 			}
 
-
-			this.updateResource(resource,message);
+			this.updateResource(resource, message);
 		}
 
 	};
@@ -480,24 +477,23 @@
 
 	Session.prototype.addFiles = function(html) {
 
-			var dataB64 = window.btoa(unescape(encodeURIComponent(JSON.stringify(html))));
-			var data = decodeURIComponent(escape(window.atob(dataB64)));
+		var dataB64 = window.btoa(unescape(encodeURIComponent(JSON.stringify(html))));
+		var data = decodeURIComponent(escape(window.atob(dataB64)));
 
-			var script = '(function() {' +
-			'var html = ' + data + ' ;' +
-			'for (var i in html){'+
-				'var data = html[i] ;' +
-				'var el = document.createElement(data.tag);'+
-				'for(var y in data.attributes){'+
-				'	el.setAttribute(y,data.attributes[y]);'+
-				'}'+
-				'console.log("[Live][add]", el);' +
-				'document.body.appendChild(el);' +
-			'}'+
-			'})()';
+		var script = '(function() {' +
+		'var html = ' + data + ' ;' +
+		'for (var i in html){' +
+			'var data = html[i] ;' +
+			'var el = document.createElement(data.tag);' +
+			'for(var y in data.attributes){' +
+			'	el.setAttribute(y,data.attributes[y]);' +
+			'}' +
+			'console.log("[Live][add]", el);' +
+			'document.body.appendChild(el);' +
+		'}' +
+		'})()';
 
-
-			chrome.devtools.inspectedWindow.eval(script);
+		chrome.devtools.inspectedWindow.eval(script);
 
 	}
 
@@ -541,12 +537,17 @@
 
 	};
 
+	Session.prototype.index = function(html) {
+		this.reload();
+		chrome.devtools.panels.openResource(this.url, null, function() {});
+	};
+
 	Session.prototype.addRessource = function(url, contentScript) {
 
 		if (typeof url == 'string') {
 			var script = '(function() {' +
-			'console.log("[add] ' + this.url+url + ' has just been updated ["+ time +"] ");' +
-			 contentScript+
+			'console.log("[add] ' + this.url + url + ' has just been updated ["+ time +"] ");' +
+			 contentScript +
 			'})()';
 
 			chrome.devtools.inspectedWindow.eval(script);
@@ -560,11 +561,11 @@
 		if (typeof url == 'string') {
 			var script = '(function() {' +
 			'var time = new Date().getTime();' +
-			'console.log("[update] ' + this.url+url + ' has just been updated ["+ time +"] ");' +
+			'console.log("[update] ' + this.url + url + ' has just been updated ["+ time +"] ");' +
 			'})()';
 
 			chrome.devtools.inspectedWindow.eval(script);
-			chrome.devtools.panels.openResource(this.url+url, null, function() {});
+			chrome.devtools.panels.openResource(this.url + url, null, function() {});
 		}
 
 	};

@@ -250,6 +250,7 @@ Live.prototype.watch = function(options) {
  */
 
 Live.prototype.onFileChange = function(filepath) {
+	console.log('file changed :' , filepath);
 	if(this.file[filepath] !== undefined ){
 		if(this.file[filepath].plugin !== undefined ){
 			return this.file[filepath].plugin.resolve(this,this.file[filepath]);
