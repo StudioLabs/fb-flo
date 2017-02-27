@@ -60,12 +60,21 @@ function HttpServer(options) {
 			cacheControlHeader: "max-age=0, must-revalidate",
 		};
 
+
+	if(this.options.middleware != undefined){
+		for (var url in this.options.middleware) {
+			this.app.use(url, this.options.middleware[url]);
+		}
+	}
+
 	this.app.use('/', middlewareDevTools(this.root));
 
 	this.httpServer = http.createServer(this.app);
 	this.httpServer.on('close', this.onClose.bind(this));
 	this.httpServer.on('connection', this.onConnection.bind(this));
 	this.httpServer.on('request', this.onRequest.bind(this));
+
+	return this;
 }
 
 /**
