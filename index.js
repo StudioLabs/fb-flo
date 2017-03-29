@@ -6,20 +6,19 @@
  *  LICENSE file in the root directory of this source tree. An additional grant
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
+"use strict";
 
-'use strict';
-
-var fs = require('fs');
-var path = require('path');
-var utf8 = require('utf8');
-var _ = require('lodash');
-var sane = require('sane');
-var WS = require('./src/server/ws');
-var HTTP = require('./src/server/http');
-var util = require('gulp-util');
-var mkdirp = require('mkdirp');
-var EventEmitter = require('events').EventEmitter;
-var chalk = require('chalk');
+var fs = require("fs");
+var path = require("path");
+var utf8 = require("utf8");
+var _ = require("lodash");
+var sane = require("sane");
+var WS = require("./src/server/ws");
+var HTTP = require("./src/server/http");
+var util = require("gulp-util");
+var mkdirp = require("mkdirp");
+var EventEmitter = require("events").EventEmitter;
+var chalk = require("chalk");
 
 /**
  * Top-level API for Live. Defaults params and instantiates `Live`.
@@ -32,42 +31,45 @@ var chalk = require('chalk');
  */
 
 function Live(options) {
-    this.options = {};
+  this.options = {};
 
-    var options = _.assign({
-        verbose: true,
-        debug: false,
-        memory: true
-    }, options);
+  var options = _.assign(
+    {
+      verbose: true,
+      debug: false,
+      memory: true
+    },
+    options
+  );
 
-    this.config(options);
+  this.config(options);
 
-    this.watcher = [];
+  this.watcher = [];
 
-    this.file = [];
-    this.url = [];
-    this.src = [];
-    this.tmp = [];
+  this.file = [];
+  this.url = [];
+  this.src = [];
+  this.tmp = [];
 
-    var MemoryFileSystem = require('memory-fs');
-    process.live = [];
-    if (this.options.memory == true) {
-        process.fs = new MemoryFileSystem();
-    } else {
-        process.fs = fs;
-        process.fs.mkdirpSync = mkdirp.sync;
-    }
+  var MemoryFileSystem = require("memory-fs");
+  process.live = [];
+  if (this.options.memory == true) {
+    process.fs = new MemoryFileSystem();
+  } else {
+    process.fs = fs;
+    process.fs.mkdirpSync = mkdirp.sync;
+  }
 
-    this.log = logger(this.options.verbose, 'Live');
-    this.debug = logger(this.options.debug, 'Live');
+  this.log = logger(this.options.verbose, "Live");
+  this.debug = logger(this.options.debug, "Live");
 
-    this.rootDir = path.resolve(this.options.root || process.cwd()) + '/';
+  this.rootDir = path.resolve(this.options.root || process.cwd()) + "/";
 
-    this.onError = this.error.bind(this);
-    this.fileEvent = this.onFileChange.bind(this);
+  this.onError = this.error.bind(this);
+  this.fileEvent = this.onFileChange.bind(this);
 
-    process.on('SIGINT', this.stop.bind(this));
-    process.on('exit', this.stop.bind(this));
+  process.on("SIGINT", this.stop.bind(this));
+  process.on("exit", this.stop.bind(this));
 }
 
 /**
@@ -76,7 +78,7 @@ function Live(options) {
  * @private
  */
 Live.prototype.config = function(options) {
-    this.options = _.assign(this.options, options);
+  this.options = _.assign(this.options, options);
 };
 
 /**
@@ -96,23 +98,21 @@ Live.prototype.__proto__ = EventEmitter.prototype;
  */
 
 Live.prototype.start = function(options) {
-    if (options !== undefined) {
-        this.config(options);
-    }
+  if (options !== undefined) {
+    this.config(options);
+  }
 
-    if (this.options.devtools !== undefined) {
-        this.devtools(this.options.devtools);
-    }
+  if (this.options.devtools !== undefined) {
+    this.devtools(this.options.devtools);
+  }
 
-    if (this.options.watch !== undefined) {
-        this.watch(this.options.watch);
-    }
+  if (this.options.watch !== undefined) {
+    this.watch(this.options.watch);
+  }
 
-
-    if (this.options.connect !== undefined) {
-        this.connect(this.options.connect);
-    }
-
+  if (this.options.connect !== undefined) {
+    this.connect(this.options.connect);
+  }
 };
 
 /**
@@ -122,20 +122,23 @@ Live.prototype.start = function(options) {
  */
 
 Live.prototype.connect = function(options) {
-    var httpConfig = _.assign({
-        log: this.options.verbose,
-        debug: this.options.debug,
-        open: false,
-        parent: this
-    }, options);
+  var httpConfig = _.assign(
+    {
+      log: this.options.verbose,
+      debug: this.options.debug,
+      open: false,
+      parent: this
+    },
+    options
+  );
 
-    this.http = new HTTP(httpConfig);
+  this.http = new HTTP(httpConfig);
 
-    this.http.start();
+  this.http.start();
 
-    this.options.connect = options;
+  this.options.connect = options;
 
-    return  this.http;
+  return this.http;
 };
 
 /**
@@ -145,37 +148,40 @@ Live.prototype.connect = function(options) {
  */
 
 Live.prototype.devtools = function(options) {
-    if (options.directory == undefined) {
-        util.log(util.colors.yellow('please define a source directory'));
-        process.exit(0);
-    }
+  if (options.directory == undefined) {
+    util.log(util.colors.yellow("please define a source directory"));
+    process.exit(0);
+  }
 
-    options.directory = path.resolve(options.directory);
-    options.destination = path.resolve(options.destination || options.directory);
+  options.directory = path.resolve(options.directory);
+  options.destination = path.resolve(options.destination || options.directory);
 
-    var wsConfig = _.assign({
-        port: this.options.port,
-        log: this.options.verbose,
-        debug: this.options.debug,
-        parent: this
-    }, options);
+  var wsConfig = _.assign(
+    {
+      port: this.options.port,
+      log: this.options.verbose,
+      debug: this.options.debug,
+      parent: this
+    },
+    options
+  );
 
-    this.ws = new WS(wsConfig);
-    this.ws.start();
+  this.ws = new WS(wsConfig);
+  this.ws.start();
 
-    this.options.devtools = options;
+  this.options.devtools = options;
 
-    var through = require('through');
+  var through = require("through");
 
-    if (options.plugin !== undefined) {
-        this.initPlugins(options.plugin);
-    }
+  if (options.plugin !== undefined) {
+    this.initPlugins(options.plugin);
+  }
 
-    this.stream = through(function() {
-        this.pause();
-    });
+  this.stream = through(function() {
+    this.pause();
+  });
 
-    return this.stream;
+  return this.stream;
 };
 
 /**
@@ -184,22 +190,24 @@ Live.prototype.devtools = function(options) {
  * @private
  */
 Live.prototype.initPlugins = function(plugins) {
-    this.streams = [];
+  this.streams = [];
 
-    plugins.map((function(plugin, i) {
-        this.streams[i] = plugin.stream = i;
-        plugin.init(this);
-    }).bind(this));
+  plugins.map(
+    (function(plugin, i) {
+      this.streams[i] = (plugin.stream = i);
+      plugin.init(this);
+    }).bind(this)
+  );
 };
 
 Live.prototype.streamFinished = function(plugin) {
-    this.streams = this.streams.filter(function(e) {
-        return e !== plugin.stream;
-    });
+  this.streams = this.streams.filter(function(e) {
+    return e !== plugin.stream;
+  });
 
-    if (this.streams.length == 0) {
-        this.stream.emit('end');
-    }
+  if (this.streams.length == 0) {
+    this.stream.emit("end");
+  }
 };
 
 /**
@@ -208,23 +216,29 @@ Live.prototype.streamFinished = function(plugin) {
  * @private
  */
 Live.prototype.watch = function(options) {
-    for (var folder in options) {
-        var params = options[folder];
-        params = _.assign({
-            files: []
-        }, params);
+  for (var folder in options) {
+    var params = options[folder];
+    params = _.assign(
+      {
+        files: []
+      },
+      params
+    );
 
-        var folderPath = path.resolve(folder);
-        this.watcher[folder] = new sane(folderPath, {glob: params.files});
+    var folderPath = path.resolve(folder);
+    this.watcher[folder] = new sane(folderPath, { glob: params.files });
 
-        this.watcher[folder].on('change', (function(filepath, root) {
-            this.fileEvent(root + '/' + filepath);
-        }).bind(this));
-        this.watcher[folder].on('error', this.onError, this);
-        this.log('start watching ', folder);
-    }
+    this.watcher[folder].on(
+      "change",
+      (function(filepath, root) {
+        this.fileEvent(root + "/" + filepath);
+      }).bind(this)
+    );
+    this.watcher[folder].on("error", this.onError, this);
+    this.log("start watching ", folder);
+  }
 
-    this.options.watch = options;
+  this.options.watch = options;
 };
 
 /**
@@ -235,16 +249,16 @@ Live.prototype.watch = function(options) {
  */
 
 Live.prototype.onFileChange = function(filepath) {
-    console.log('file changed :', filepath);
-    if (this.file[filepath] !== undefined) {
-        if (this.file[filepath].plugin !== undefined) {
-            return this.file[filepath].plugin.resolve(this, this.file[filepath]);
-        }
-    } else {
-        var fileUrl = filepath.replace(this.options.devtools.directory + '/', '');
-
-        return this.resolve(filepath, fileUrl);
+  console.log("file changed :", filepath);
+  if (this.file[filepath] !== undefined) {
+    if (this.file[filepath].plugin !== undefined) {
+      return this.file[filepath].plugin.resolve(this, this.file[filepath]);
     }
+  } else {
+    var fileUrl = filepath.replace(this.options.devtools.directory + "/", "");
+
+    return this.resolve(filepath, fileUrl);
+  }
 };
 
 /**
@@ -255,11 +269,15 @@ Live.prototype.onFileChange = function(filepath) {
  */
 
 Live.prototype.resolve = function(filepath, fileUrl) {
-    if (fs.existsSync(filepath)) {
-        this.log('update', filepath);
+  if (fs.existsSync(filepath)) {
+    this.log("update", filepath);
 
-        this.broadcast({action: 'update', url: fileUrl, content: fs.readFileSync(filepath).toString()});
-    }
+    this.broadcast({
+      action: "update",
+      url: fileUrl,
+      content: fs.readFileSync(filepath).toString()
+    });
+  }
 };
 
 /**
@@ -270,15 +288,15 @@ Live.prototype.resolve = function(filepath, fileUrl) {
  */
 
 Live.prototype.onMessage = function(message) {
-    this.debug('message', message);
+  this.debug("message", message);
 
-    if (message.action == 'update') {
-        this.onUpdateAction(message);
-    } else if (message.action == 'sync') {
-        this.onSyncAction(message);
-    } else {
-        this.emit(message.action, message);
-    }
+  if (message.action == "update") {
+    this.onUpdateAction(message);
+  } else if (message.action == "sync") {
+    this.onSyncAction(message);
+  } else {
+    this.emit(message.action, message);
+  }
 };
 
 /**
@@ -289,28 +307,28 @@ Live.prototype.onMessage = function(message) {
  */
 
 Live.prototype.onUpdateAction = function(message) {
-    var url = message.src;
-    this.debug('update', url);
+  var url = message.src;
+  this.debug("update", url);
 
-    var file;
-    if (this.url[url] !== undefined) {
-        file = this.url[url];
-    } else if (this.src[url] !== undefined) {
-        file = this.src[url];
-    }
+  var file;
+  if (this.url[url] !== undefined) {
+    file = this.url[url];
+  } else if (this.src[url] !== undefined) {
+    file = this.src[url];
+  }
 
-    if (file !== undefined) {
-        file.content = message.content;
-        fs.writeFileSync(file.path, message.content);
-    } else {
-        var filepath = this.options.devtools.directory + '/' + url;
-        if (fs.existsSync(filepath)) {
-            var content = fs.readFileSync(filepath).toString();
-            if (content != message.content) {
-                fs.writeFileSync(filepath, message.content);
-            }
-        }
+  if (file !== undefined) {
+    file.content = message.content;
+    fs.writeFileSync(file.path, message.content);
+  } else {
+    var filepath = this.options.devtools.directory + "/" + url;
+    if (fs.existsSync(filepath)) {
+      var content = fs.readFileSync(filepath).toString();
+      if (content != message.content) {
+        fs.writeFileSync(filepath, message.content);
+      }
     }
+  }
 };
 
 /**
@@ -321,31 +339,31 @@ Live.prototype.onUpdateAction = function(message) {
  */
 
 Live.prototype.onSyncAction = function(message) {
-    var url = message.src;
-    this.debug('sync', url);
+  var url = message.src;
+  this.debug("sync", url);
 
-    var file;
-    if (this.url[url] !== undefined) {
-        file = this.url[url];
-    } else if (this.src[url] !== undefined) {
-        file = this.src[url];
+  var file;
+  if (this.url[url] !== undefined) {
+    file = this.url[url];
+  } else if (this.src[url] !== undefined) {
+    file = this.src[url];
+  }
+  if (file !== undefined) {
+    if (file.sync !== undefined) {
+      originalFileContent = file.sync;
+      delete file.sync;
+    } else {
+      var originalFileContent = fs.readFileSync(file.path, "utf8");
     }
-    if (file !== undefined) {
-        if (file.sync !== undefined) {
-            originalFileContent = file.sync;
-            delete file.sync;
-        } else {
-            var originalFileContent = fs.readFileSync(file.path, 'utf8');
-        }
 
-        var record = {
-            action: 'sync',
-            url: url,
-            content: originalFileContent
-        };
+    var record = {
+      action: "sync",
+      url: url,
+      content: originalFileContent
+    };
 
-        this.broadcast(record);
-    }
+    this.broadcast(record);
+  }
 };
 
 /**
@@ -355,19 +373,19 @@ Live.prototype.onSyncAction = function(message) {
  */
 
 Live.prototype.close = function() {
-    this.log('exiting...');
+  this.log("exiting...");
 
-    if (this.ws !== undefined) {
-        this.ws.close();
-    }
+  if (this.ws !== undefined) {
+    this.ws.close();
+  }
 
-    if (this.options.watch !== undefined) {
-        this.stopWatching();
-    }
+  if (this.options.watch !== undefined) {
+    this.stopWatching();
+  }
 
-    if (this.http !== undefined) {
-        this.http.close();
-    }
+  if (this.http !== undefined) {
+    this.http.close();
+  }
 };
 
 /**
@@ -376,36 +394,36 @@ Live.prototype.close = function() {
  * @private
  */
 Live.prototype.stop = function() {
-    this.close();
-    process.nextTick(function() {
-        return process.exit(0);
-    });
+  this.close();
+  process.nextTick(function() {
+    return process.exit(0);
+  });
 };
 
 /**
-* Wrapper for open module - for easier stubbin'
-* @param url
-* @param name
-*/
+ * Wrapper for open module - for easier stubbin'
+ * @param url
+ * @param name
+ */
 
 Live.prototype.open = function(url, name) {
-    if (this.ws !== undefined && this.ws.connected == true) {
-        this.broadcast({action: 'reload'});
-    } else {
-        require('opn')(url, name || null);
-    }
+  if (this.ws !== undefined && this.ws.connected == true) {
+    this.broadcast({ action: "reload" });
+  } else {
+    require("opn")(url, name || null);
+  }
 };
 
 /**
-* Wrapper for open module - for easier stubbin'
-* @param url
-* @param name
-*/
+ * Wrapper for open module - for easier stubbin'
+ * @param url
+ * @param name
+ */
 
 Live.prototype.reload = function() {
-    if (this.ws !== undefined && this.ws.connected == true) {
-        this.broadcast({action: 'reload'});
-    }
+  if (this.ws !== undefined && this.ws.connected == true) {
+    this.broadcast({ action: "reload" });
+  }
 };
 
 /**
@@ -424,68 +442,74 @@ Live.prototype.reload = function() {
  */
 
 Live.prototype.error = function(error) {
-    this.debug('error', error);
+  this.debug("error", error);
 
-    if (error.annotated !== undefined) {
-        error.message = error.annotated;
-    }
+  if (error.annotated !== undefined) {
+    error.message = error.annotated;
+  }
 
-    if (error.codeFrame !== undefined) {
-        error.message = error.message.replace(': ', ':\n') + '\n' + error.codeFrame;
-    }
+  if (error.codeFrame !== undefined) {
+    error.message = error.message.replace(": ", ":\n") + "\n" + error.codeFrame;
+  }
 
-    if (error.filename !== undefined) {
-        error.file = error.filename;
-    }
+  if (error.filename !== undefined) {
+    error.file = error.filename;
+  }
 
-    if (error.loc !== undefined) {
-        error.line = error.loc.line;
-    }
+  if (error.loc !== undefined) {
+    error.line = error.loc.line;
+  }
 
-    if (error.message !== undefined) {
-        var errorMessage = {
-            action: 'error',
-            message: error.message
-        };
+  if (error.message !== undefined) {
+    var errorMessage = {
+      action: "error",
+      message: error.message
+    };
 
-        if (error.file !== undefined) {
-            var filepath = path.resolve(error.file);
-            if (this.file[filepath] !== undefined) {
-                var file = this.file[filepath];
-                var url = this.getClientHostname() + '/' + file.src;
+    if (error.file !== undefined) {
+      var filepath = path.resolve(error.file);
+      if (this.file[filepath] !== undefined) {
+        var file = this.file[filepath];
+        var url = this.getClientHostname() + "/" + file.src;
 
-                var fileLine = error.message.split('\n')[0];
+        var fileLine = error.message.split("\n")[0];
 
-                if (fileLine.indexOf(file.src) >= 0) {
-                    errorMessage.message = error.message.replace(fileLine, url);
-                } else if (fileLine.indexOf(file.url) >= 0) {
-                    errorMessage.message = error.message.replace(fileLine, url);
-                } else {
-                    errorMessage.message = url + '\n' + error.message;
-                }
-
-                if (error.line != undefined && error.line > 0) {
-                    errorMessage.message = errorMessage.message.replace(url, url + ':' + error.line);
-                }
-
-                var fileName = path.basename(file.path);
-                errorMessage.message = errorMessage.message.replace(file.path, fileName);
-
-                errorMessage.url = url;
-                errorMessage.src = file.src;
-
-                errorMessage.content = fs.readFileSync(file.path).toString();
-            }
+        if (fileLine.indexOf(file.src) >= 0) {
+          errorMessage.message = error.message.replace(fileLine, url);
+        } else if (fileLine.indexOf(file.url) >= 0) {
+          errorMessage.message = error.message.replace(fileLine, url);
+        } else {
+          errorMessage.message = url + "\n" + error.message;
         }
 
-        errorMessage.message = chalk.stripColor(errorMessage.message);
+        if (error.line != undefined && error.line > 0) {
+          errorMessage.message = errorMessage.message.replace(
+            url,
+            url + ":" + error.line
+          );
+        }
 
-        this.broadcast(errorMessage);
+        var fileName = path.basename(file.path);
+        errorMessage.message = errorMessage.message.replace(
+          file.path,
+          fileName
+        );
 
-        console.log('[error]');
+        errorMessage.url = url;
+        errorMessage.src = file.src;
 
-        console.log(errorMessage.message);
+        errorMessage.content = fs.readFileSync(file.path).toString();
+      }
     }
+
+    errorMessage.message = chalk.stripColor(errorMessage.message);
+
+    this.broadcast(errorMessage);
+
+    console.log("[error]");
+
+    console.log(errorMessage.message);
+  }
 };
 
 /**
@@ -495,19 +519,19 @@ Live.prototype.error = function(error) {
  */
 
 Live.prototype.getClientHostname = function() {
-    if (this.options.devtools.hostname !== undefined)
-        return this.options.devtools.hostname;
+  if (this.options.devtools.hostname !== undefined)
+    return this.options.devtools.hostname;
 
-    var hostname = this.ws.hostname;
-    try {
-        if (hostname[hostname.length - 1] == '/') {
-            hostname = hostname.substr(0, hostname.length - 1);
-        }
-    } catch (err) {
-        this.onError(err);
+  var hostname = this.ws.hostname;
+  try {
+    if (hostname[hostname.length - 1] == "/") {
+      hostname = hostname.substr(0, hostname.length - 1);
     }
+  } catch (err) {
+    this.onError(err);
+  }
 
-    return hostname;
+  return hostname;
 };
 
 /**
@@ -517,7 +541,7 @@ Live.prototype.getClientHostname = function() {
  */
 
 Live.prototype.getClientPageUrl = function() {
-    return this.ws.pageUrl;
+  return this.ws.pageUrl;
 };
 
 /**
@@ -526,16 +550,16 @@ Live.prototype.getClientPageUrl = function() {
  * @public
  */
 Live.prototype.registerFile = function(file) {
-    var alreadyPresent = this.file[file.path] !== undefined;
+  var alreadyPresent = this.file[file.path] !== undefined;
 
-    this.url[file.url] = file;
-    this.src[file.src] = file;
-    this.file[file.path] = file;
-    if (file.tmp !== undefined) {
-        this.tmp[file.tmp] = file;
-    }
+  this.url[file.url] = file;
+  this.src[file.src] = file;
+  this.file[file.path] = file;
+  if (file.tmp !== undefined) {
+    this.tmp[file.tmp] = file;
+  }
 
-    return alreadyPresent;
+  return alreadyPresent;
 };
 /**
  * Stop watching
@@ -544,14 +568,16 @@ Live.prototype.registerFile = function(file) {
  */
 
 Live.prototype.stopWatching = function(cb) {
-    var self = this;
-    this.watcher.forEach((function(watch, folder) {
-        watch.close();
-        self.debug('stop watching ', folder);
-    }).bind(this));
-    if (cb !== undefined) {
-        cb();
-    }
+  var self = this;
+  this.watcher.forEach(
+    (function(watch, folder) {
+      watch.close();
+      self.debug("stop watching ", folder);
+    }).bind(this)
+  );
+  if (cb !== undefined) {
+    cb();
+  }
 };
 
 /**
@@ -562,24 +588,24 @@ Live.prototype.stopWatching = function(cb) {
  */
 
 Live.prototype.broadcast = function(message) {
-    if (this.ws.hostname != null) {
-        this.debug('broadcast', message);
-        this.ws.broadcast(message);
-    } else {
-        this.debug('broadcast canceled, no connection with a client');
-    }
+  if (this.ws.hostname != null) {
+    this.debug("broadcast", message);
+    this.ws.broadcast(message);
+  } else {
+    this.debug("broadcast canceled, no connection with a client");
+  }
 };
 
 function logger(verbose, moduleName) {
-    var slice = [].slice;
+  var slice = [].slice;
 
-    return function() {
-        var args = slice.call(arguments);
-        args[0] = '[' + moduleName + '] ' + args[0];
-        if (verbose) {
-            console.log.apply(console, args);
-        }
-    };
+  return function() {
+    var args = slice.call(arguments);
+    args[0] = "[" + moduleName + "] " + args[0];
+    if (verbose) {
+      console.log.apply(console, args);
+    }
+  };
 }
 
 module.exports = Live;

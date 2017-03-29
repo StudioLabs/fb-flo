@@ -7,12 +7,12 @@
  *  of patent rights can be found in the PATENTS file in the same directory.
  */
 
-'use strict';
+"use strict";
 
-var http = require('http');
-var path = require('path');
-var fs = require('fs');
-var EventEmitter = require('events').EventEmitter;
+var http = require("http");
+var path = require("path");
+var fs = require("fs");
+var EventEmitter = require("events").EventEmitter;
 var connect = require("connect");
 var util = require("gulp-util");
 var middlewareDevTools = require("devtools-live-middleware");
@@ -28,53 +28,50 @@ module.exports = HttpServer;
  */
 
 function HttpServer(options) {
-	this.sockets = [];
-	this.options = options;
-	this.log = this.logger(options.verbose, 'HTTP');
-	this.debug = this.logger(options.debug, 'HTTP');
-	this.parent = options.parent;
-	this.port = options.port || "8080";
+  this.sockets = [];
+  this.options = options;
+  this.log = this.logger(options.verbose, "HTTP");
+  this.debug = this.logger(options.debug, "HTTP");
+  this.parent = options.parent;
+  this.port = options.port || "8080";
 
-	if (options.root == undefined) {
-		util.log(util.colors.yellow("please define a server root"));
-		process.exit(0);
-	}
+  if (options.root == undefined) {
+    util.log(util.colors.yellow("please define a server root"));
+    process.exit(0);
+  }
 
-	this.root = path.resolve(options.root) ;
-	this.fallback = options.fallback || this.root + '/index.html' ;
+  this.root = path.resolve(options.root);
+  this.fallback = options.fallback || this.root + "/index.html";
 
-	this.host = options.host || "localhost";
+  this.host = options.host || "localhost";
 
-	this.app = connect();
+  this.app = connect();
 
-	var options = {
-			dir: this.root,
-			aliases: [
-				['/', '/index.html'],
-			],
-			ignoreFile: function(fullPath) {
-				var basename = path.basename(fullPath);
-				return /^\./.test(basename) || /~$/.test(basename);
-			},
-			followSymlinks: true,
-			cacheControlHeader: "max-age=0, must-revalidate",
-		};
+  var options = {
+    dir: this.root,
+    aliases: [["/", "/index.html"]],
+    ignoreFile: function(fullPath) {
+      var basename = path.basename(fullPath);
+      return /^\./.test(basename) || /~$/.test(basename);
+    },
+    followSymlinks: true,
+    cacheControlHeader: "max-age=0, must-revalidate"
+  };
 
+  if (this.options.middleware != undefined) {
+    for (var url in this.options.middleware) {
+      this.app.use(url, this.options.middleware[url]);
+    }
+  }
 
-	if(this.options.middleware != undefined){
-		for (var url in this.options.middleware) {
-			this.app.use(url, this.options.middleware[url]);
-		}
-	}
+  this.app.use("/", middlewareDevTools(this.root));
 
-	this.app.use('/', middlewareDevTools(this.root));
+  this.httpServer = http.createServer(this.app);
+  this.httpServer.on("close", this.onClose.bind(this));
+  this.httpServer.on("connection", this.onConnection.bind(this));
+  this.httpServer.on("request", this.onRequest.bind(this));
 
-	this.httpServer = http.createServer(this.app);
-	this.httpServer.on('close', this.onClose.bind(this));
-	this.httpServer.on('connection', this.onConnection.bind(this));
-	this.httpServer.on('request', this.onRequest.bind(this));
-
-	return this;
+  return this;
 }
 
 /**
@@ -83,41 +80,45 @@ function HttpServer(options) {
  * @private
  */
 HttpServer.prototype.start = function() {
-	this.log("starting http://" + this.host + ":" + this.port);
+  this.log("starting http://" + this.host + ":" + this.port);
 
-	this.httpServer.listen(this.options.port, function(err) {
-		if (err) {
-			return this.log("Error : " + err);
-		}
+  this.httpServer.listen(
+    this.options.port,
+    (function(err) {
+      if (err) {
+        return this.log("Error : " + err);
+      }
 
-		this.parent.emit('ready');
-		this.log("ready");
-		if (this.options.open === true) {
-			this.parent.open("http://" + this.host + ":" + this.port);
-		}
-
-	}.bind(this));
+      this.parent.emit("ready");
+      this.log("ready");
+      if (this.options.open === true) {
+        this.parent.open("http://" + this.host + ":" + this.port);
+      }
+    }).bind(this)
+  );
 };
 
 HttpServer.prototype.__proto__ = EventEmitter.prototype;
 
 HttpServer.prototype.onRequest = function(request) {
-	this.debug("Received request " + request.method + " " + request.url);
-
+  this.debug("Received request " + request.method + " " + request.url);
 };
 
 HttpServer.prototype.onConnection = function(socket) {
-	this.sockets.push(socket);
-	return socket.on("close", function() {
-		return this.sockets.splice(this.sockets.indexOf(socket), 1);
-	}.bind(this));
+  this.sockets.push(socket);
+  return socket.on(
+    "close",
+    (function() {
+      return this.sockets.splice(this.sockets.indexOf(socket), 1);
+    }).bind(this)
+  );
 };
 
 HttpServer.prototype.onClose = function() {
-	this.debug("shutting down...");
-	this.sockets.forEach(function(socket) {
-		return socket.destroy();
-	});
+  this.debug("shutting down...");
+  this.sockets.forEach(function(socket) {
+    return socket.destroy();
+  });
 };
 
 /**
@@ -127,16 +128,16 @@ HttpServer.prototype.onClose = function() {
  */
 
 HttpServer.prototype.close = function() {
-	this.httpServer.close();
+  this.httpServer.close();
 };
 
 HttpServer.prototype.logger = function(verbose, moduleName) {
-	var slice = [].slice;
-	return function() {
-		var args = slice.call(arguments);
-		args[0] = '[' + moduleName + '] ' + args[0];
-		if (verbose) {
-			console.log.apply(console, args);
-		}
-	}
+  var slice = [].slice;
+  return function() {
+    var args = slice.call(arguments);
+    args[0] = "[" + moduleName + "] " + args[0];
+    if (verbose) {
+      console.log.apply(console, args);
+    }
+  };
 };

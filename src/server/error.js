@@ -12,16 +12,16 @@ import chalk from "chalk";
  */
 
 let defs = {
-  string:     chalk.red,
+  string: chalk.red,
   punctuator: chalk.bold,
-  curly:      chalk.green,
-  parens:     chalk.blue.bold,
-  square:     chalk.yellow,
-  keyword:    chalk.cyan,
-  number:     chalk.magenta,
-  regex:      chalk.magenta,
-  comment:    chalk.grey,
-  invalid:    chalk.inverse
+  curly: chalk.green,
+  parens: chalk.blue.bold,
+  square: chalk.yellow,
+  keyword: chalk.cyan,
+  number: chalk.magenta,
+  regex: chalk.magenta,
+  comment: chalk.grey,
+  invalid: chalk.inverse
 };
 
 /**
@@ -62,11 +62,11 @@ function getTokenType(match) {
  */
 
 function highlight(text: string) {
-  return text.replace(jsTokens, function (...args) {
+  return text.replace(jsTokens, function(...args) {
     let type = getTokenType(args);
     let colorize = defs[type];
     if (colorize) {
-      return args[0].split(NEWLINE).map((str) => colorize(str)).join("\n");
+      return args[0].split(NEWLINE).map(str => colorize(str)).join("\n");
     } else {
       return args[0];
     }
@@ -77,11 +77,11 @@ function highlight(text: string) {
  * Create a code frame, adding line numbers, code highlighting, and pointing to a given position.
  */
 
-export default function (
+export default function(
   rawLines: string,
   lineNumber: number,
   colNumber: number,
-  opts: Object = {},
+  opts: Object = {}
 ): string {
   colNumber = Math.max(colNumber, 0);
 
@@ -90,7 +90,7 @@ export default function (
 
   let lines = rawLines.split(NEWLINE);
   let start = Math.max(lineNumber - 3, 0);
-  let end   = Math.min(lines.length, lineNumber + 3);
+  let end = Math.min(lines.length, lineNumber + 3);
 
   if (!lineNumber && !colNumber) {
     start = 0;
