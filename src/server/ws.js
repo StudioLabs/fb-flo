@@ -69,11 +69,11 @@ WSServer.prototype.onReady = function() {
 WSServer.prototype.start = function() {
   this.httpServer.listen(
     this.port,
-    (function(err) {
+    function(err) {
       if (err) {
         return this.log("Error : " + err);
       }
-    }).bind(this)
+    }.bind(this)
   );
 };
 

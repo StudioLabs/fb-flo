@@ -155,6 +155,7 @@
     } else {
       callback();
     }
+
     return this;
   };
 
@@ -212,9 +213,9 @@
 	 */
 
   Connection.prototype.sendMessage = function(message, callback) {
-    this.ws.send(this.utf8ToB64(JSON.stringify(message)));
     console.log("send : ", message);
 
+    this.ws.send(this.utf8ToB64(JSON.stringify(message)));
     if (callback) {
       callback();
     }
@@ -250,9 +251,9 @@
       this.logger.log("Reconnecting in ", delay);
       this.callbacks.retry(delay);
       setTimeout(
-        (function() {
+        function() {
           this.connect();
-        }).bind(this),
+        }.bind(this),
         delay
       );
     }
@@ -272,4 +273,4 @@
       return this;
     };
   }
-}).call(this);
+}.call(this));

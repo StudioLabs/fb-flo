@@ -10,19 +10,18 @@
 /* jshint evil:true */
 
 this.Logger = (function() {
-  'use strict';
-
+  "use strict";
   function Logger(log) {
     return function(namespace) {
       return {
-        error: createLogLevel('error'),
-        log: createLogLevel('log')
+        error: createLogLevel("error"),
+        log: createLogLevel("log")
       };
 
       function createLogLevel(level) {
-        return function () {
+        return function() {
           var args = [].slice.call(arguments);
-          args[0] = '[' + namespace + '] ' + args[0];
+          args[0] = "[" + namespace + "] " + args[0];
           return log([level, args]);
         };
       }
@@ -31,10 +30,10 @@ this.Logger = (function() {
 
   Logger.logInContext = function(arg, method) {
     if (!method) {
-      method = 'log';
+      method = "log";
     }
-    chrome.devtools.inspectedWindow['eval'](
-      'console.' + method + '("' + arg.toString() + '")'
+    chrome.devtools.inspectedWindow["eval"](
+      "console." + method + '("' + arg.toString() + '")'
     );
   };
 

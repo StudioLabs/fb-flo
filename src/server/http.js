@@ -58,20 +58,12 @@ function HttpServer(options) {
     cacheControlHeader: "max-age=0, must-revalidate"
   };
 
-  if (this.options.middleware != undefined) {
-    for (var url in this.options.middleware) {
-      this.app.use(url, this.options.middleware[url]);
-    }
-  }
-
   this.app.use("/", middlewareDevTools(this.root));
 
   this.httpServer = http.createServer(this.app);
   this.httpServer.on("close", this.onClose.bind(this));
   this.httpServer.on("connection", this.onConnection.bind(this));
   this.httpServer.on("request", this.onRequest.bind(this));
-
-  return this;
 }
 
 /**
@@ -84,7 +76,7 @@ HttpServer.prototype.start = function() {
 
   this.httpServer.listen(
     this.options.port,
-    (function(err) {
+    function(err) {
       if (err) {
         return this.log("Error : " + err);
       }
@@ -94,7 +86,7 @@ HttpServer.prototype.start = function() {
       if (this.options.open === true) {
         this.parent.open("http://" + this.host + ":" + this.port);
       }
-    }).bind(this)
+    }.bind(this)
   );
 };
 
@@ -108,9 +100,9 @@ HttpServer.prototype.onConnection = function(socket) {
   this.sockets.push(socket);
   return socket.on(
     "close",
-    (function() {
+    function() {
       return this.sockets.splice(this.sockets.indexOf(socket), 1);
-    }).bind(this)
+    }.bind(this)
   );
 };
 
