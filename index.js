@@ -193,10 +193,10 @@ Live.prototype.initPlugins = function(plugins) {
   this.streams = [];
 
   plugins.map(
-    (function(plugin, i) {
+    function(plugin, i) {
       this.streams[i] = (plugin.stream = i);
       plugin.init(this);
-    }).bind(this)
+    }.bind(this)
   );
 };
 
@@ -230,9 +230,9 @@ Live.prototype.watch = function(options) {
 
     this.watcher[folder].on(
       "change",
-      (function(filepath, root) {
+      function(filepath, root) {
         this.fileEvent(root + "/" + filepath);
-      }).bind(this)
+      }.bind(this)
     );
     this.watcher[folder].on("error", this.onError, this);
     this.log("start watching ", folder);
@@ -570,10 +570,10 @@ Live.prototype.registerFile = function(file) {
 Live.prototype.stopWatching = function(cb) {
   var self = this;
   this.watcher.forEach(
-    (function(watch, folder) {
+    function(watch, folder) {
       watch.close();
       self.debug("stop watching ", folder);
-    }).bind(this)
+    }.bind(this)
   );
   if (cb !== undefined) {
     cb();

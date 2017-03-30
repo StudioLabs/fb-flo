@@ -39,7 +39,6 @@
     this.createLogger = createLogger;
     this.logger = createLogger("session");
     this.devResources = [];
-    this.openedSources = {};
     this.url = null;
     this.conn = null;
     this.forceReloading = false;
@@ -242,8 +241,6 @@
     if (updatedResource.registered == undefined) {
       var src = updatedResource.url.split("?")[0].replace(this.url, "");
 
-      //&& content.indexOf('sourceMappingURL') == -1)
-
       if (this.devResources[src] !== undefined) {
         var resource = this.devResources[src];
 
@@ -312,30 +309,13 @@
         update.content,
         true,
         function(status) {
-          this.timeEnd();
           if (status.code != "OK") {
             this.logger.error(
               "devtoolsLive failed to update, this shouldn't happen please report it: " +
                 JSON.stringify(status)
             );
           } else {
-            if (update.event !== undefined) {
-              if (
-                update.resourceName !== undefined &&
-                !this.openedSources[update.resourceName]
-              ) {
-                chrome.devtools.panels.openResource(
-                  this.devResources[update.resourceName].url,
-                  null,
-                  function() {
-                    this.openedSources[update.resourceName] = true;
-                    this.triggerEvent(update.event, {});
-                  }.bind(this)
-                );
-              } else {
-                this.triggerEvent(update.event, {});
-              }
-            }
+            this.triggerEvent(update.event, {});
 
             if (resource.resourceName !== undefined) {
               delete resource.resourceName;
@@ -411,8 +391,6 @@
         resource.resourceName = message.url;
       }
     } else if (message.action == "update") {
-      this.time();
-
       this.logger.log("push", message.url);
 
       if (message.reload === true) {
@@ -504,7 +482,6 @@
       "})()";
 
     chrome.devtools.inspectedWindow.eval(script);
-    this.timeEnd();
   };
 
   Session.prototype.addFiles = function(html) {
@@ -548,14 +525,6 @@
     chrome.devtools.inspectedWindow.eval(script);
   };
 
-  Session.prototype.time = function(event) {
-    this.startingTime = new Date();
-  };
-
-  Session.prototype.timeEnd = function(event) {
-    this.endingTime = new Date();
-  };
-
   Session.prototype.reload = function(url) {
     var script = "(function() {" +
       "window.addEventListener('devtools-live-reload',function(){" +
@@ -572,7 +541,6 @@
 
   Session.prototype.index = function(html) {
     this.reload();
-    chrome.devtools.panels.openResource(this.url, null, function() {});
   };
 
   Session.prototype.addRessource = function(url, contentScript) {
@@ -586,7 +554,6 @@
         "})()";
 
       chrome.devtools.inspectedWindow.eval(script);
-      chrome.devtools.panels.openResource(url, null, function() {});
     }
   };
 
@@ -596,10 +563,6 @@
     );
     var data = decodeURIComponent(escape(window.atob(dataB64)));
 
-    var duration = this.endingTime.getTime() -
-      this.startingTime.getTime() +
-      " ms";
-    console.log(" => " + event + " ( " + duration + " )");
     var script = "(function() {" +
       "var event = new Event('" +
       event +
@@ -608,12 +571,6 @@
       data +
       " ;" +
       "window.dispatchEvent(event);" +
-      'console.log(" => ' +
-      this.url +
-      event +
-      " ( " +
-      duration +
-      ' )");' +
       "})()";
 
     chrome.devtools.inspectedWindow.eval(script);
@@ -621,23 +578,23 @@
 
   Session.prototype.triggerUpdateEvent = function(url) {
     if (typeof url == "string") {
-      this.timeEnd();
-      var duration = this.endingTime.getTime() -
-        this.startingTime.getTime() +
-        " ms";
-      console.log("=> " + this.url + url + " (" + duration + ")");
+      var duration = new Date();
 
       var script = "(function() {" +
+        "var liveEvent = new Event('fileUpdate');" +
+        "liveEvent.data = '" +
+        url +
+        "' ;" +
+        "window.dispatchEvent(liveEvent);" +
         'console.log(" => ' +
         this.url +
         url +
-        " (" +
-        duration +
-        ')");' +
+        " [" +
+        duration.getTime().toString() +
+        ']");' +
         "})()";
 
       chrome.devtools.inspectedWindow.eval(script);
-      chrome.devtools.panels.openResource(url, null, function() {});
     }
   };
 }.call(this));
